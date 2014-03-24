@@ -52,7 +52,7 @@ class Blocktopmenu extends Module
 	{
 		$this->name = 'blocktopmenu';
 		$this->tab = 'front_office_features';
-		$this->version = 1.10;
+		$this->version = 1.11;
 		$this->author = 'PrestaShop';
 
 		$this->bootstrap = true;
@@ -60,6 +60,7 @@ class Blocktopmenu extends Module
 
 		$this->displayName = $this->l('Top horizontal menu');
 		$this->description = $this->l('Adds a new horizontal menu to the top of your e-commerce website.');
+		$this->ps_versions_compliancy = array('min' => '1.5.6.1', 'max' => _PS_VERSION_);
 	}
 
 	public function install()
