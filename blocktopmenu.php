@@ -52,7 +52,7 @@ class Blocktopmenu extends Module
 	{
 		$this->name = 'blocktopmenu';
 		$this->tab = 'front_office_features';
-		$this->version = 1.11;
+		$this->version = '1.12';
 		$this->author = 'PrestaShop';
 
 		$this->bootstrap = true;
@@ -583,7 +583,8 @@ class Blocktopmenu extends Module
 		$this->page_name = Dispatcher::getInstance()->getController();
 		if (!$this->isCached('blocktopmenu.tpl', $this->getCacheId()))
 		{
-			$this->makeMenu();
+			if (Tools::isEmpty($this->_menu))
+				$this->makeMenu();
 			$this->smarty->assign('MENU_SEARCH', Configuration::get('MOD_BLOCKTOPMENU_SEARCH'));
 			$this->smarty->assign('MENU', $this->_menu);
 			$this->smarty->assign('this_path', $this->_path);
