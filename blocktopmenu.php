@@ -146,7 +146,11 @@ class Blocktopmenu extends Module
 		if (Tools::isSubmit('submitBlocktopmenu'))
 		{
 			$items = Tools::getValue('items');
-			if (is_array($items) && count($items) && Configuration::updateValue('MOD_BLOCKTOPMENU_ITEMS', (string)implode(',', $items)))
+			if (is_array($items) && count($items))
+ 				$updated = Configuration::updateValue('MOD_BLOCKTOPMENU_ITEMS', (string)implode(',', $items));
+ 			else
+ 				$updated = Configuration::updateValue('MOD_BLOCKTOPMENU_ITEMS', '');
+ 			if ($updated)
 				$this->_html .= $this->displayConfirmation($this->l('The settings have been updated.'));
 			else
 				$this->_html .= $this->displayError($this->l('Unable to update settings.'));
