@@ -465,7 +465,7 @@ class Blocktopmenu extends Module
 		return $html;
 	}
 
-	private function generateCategoriesMenu($categories)
+	private function generateCategoriesMenu($categories, $is_children = 0)
 	{
 		$html = '';
 
@@ -486,16 +486,15 @@ class Blocktopmenu extends Module
 			if (isset($category['children']) && !empty($category['children']))
 			{
 				$html .= '<ul>';
-				$html .= $this->generateCategoriesMenu($category['children']);
+				$html .= $this->generateCategoriesMenu($category['children'], 1);
 
-				if ((int)$category['level_depth'] == 2)
+				if ((int)$category['level_depth'] > 1)
 				{
 					$files = scandir(_PS_CAT_IMG_DIR_);
 
-					if (count($files) > 0)
+					if (count($files) > 0 && !$is_children)
 					{
 						$html .= '<li id="category-thumbnail">';
-
 						foreach ($files as $file)
 							if (preg_match('/'.$category['id_category'].'-([0-9])?_thumb.jpg/i', $file) === 1)
 								$html .= '<div><img src="'.$this->context->link->getMediaLink(_THEME_CAT_DIR_.$file)
