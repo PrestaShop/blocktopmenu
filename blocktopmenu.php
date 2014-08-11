@@ -56,7 +56,7 @@ class Blocktopmenu extends Module
 		$this->author = 'PrestaShop';
 
 		$this->bootstrap = true;
-		parent::__construct();	
+		parent::__construct();
 
 		$this->displayName = $this->l('Top horizontal menu');
 		$this->description = $this->l('Adds a new horizontal menu to the top of your e-commerce website.');
@@ -131,7 +131,7 @@ class Blocktopmenu extends Module
 	public function getContent()
 	{
 		$this->context->controller->addjQueryPlugin('hoverIntent');
-		
+
 		$id_lang = (int)Context::getContext()->language->id;
 		$languages = $this->context->controller->getLanguages();
 		$default_language = (int)Configuration::get('PS_LANG_DEFAULT');
@@ -189,7 +189,7 @@ class Blocktopmenu extends Module
 				$links_label[$val['id_lang']] = Tools::getValue('link_'.(int)$val['id_lang']);
 				$labels[$val['id_lang']] = Tools::getValue('label_'.(int)$val['id_lang']);
 			}
-			
+
 			$count_links_label = count($links_label);
 			$count_label = count($labels);
 
@@ -214,7 +214,7 @@ class Blocktopmenu extends Module
 							$shop = new Shop($shop_id);
  							$errors_add_link[] =  $shop->name;
 						}
-						
+
 					}
 
 					if (!count($errors_add_link))
@@ -224,7 +224,7 @@ class Blocktopmenu extends Module
 				}
 			}
 			$update_cache = true;
-			
+
 		}
 		elseif (Tools::isSubmit('deletelinksmenutop'))
 		{
@@ -262,7 +262,7 @@ class Blocktopmenu extends Module
 				$link = array();
 				$label = array();
 				$new_window = (int)Tools::getValue('new_window', 0);
-				
+
 				foreach (Language::getLanguages(false) as $lang)
 				{
 					$link[$lang['id_lang']] = Tools::getValue('link_'.(int)$lang['id_lang']);
@@ -277,7 +277,7 @@ class Blocktopmenu extends Module
 
 		if ($update_cache)
 			$this->clearMenuCache();
-		
+
 
 		$shops = Shop::getContextListShopID();
 		$links = array();
@@ -286,7 +286,7 @@ class Blocktopmenu extends Module
 			$this->_html .= $this->getWarningMultishopHtml();
 
 		if (Shop::isFeatureActive())
-			$this->_html .= $this->getCurrentShopInfoMsg();			
+			$this->_html .= $this->getCurrentShopInfoMsg();
 
 		$this->_html .= $this->renderForm().$this->renderAddForm();
 
@@ -596,7 +596,7 @@ class Blocktopmenu extends Module
 
 					if (count($files) > 0)
 					{
-						$html .= '<li id="category-thumbnail">';
+						$html .= '<li class="category-thumbnail">';
 
 						foreach ($files as $file)
 							if (preg_match('/'.$category['id_category'].'-([0-9])?_thumb.jpg/i', $file) === 1)
@@ -634,7 +634,7 @@ class Blocktopmenu extends Module
 			foreach ($categories as $category)
 			{
 				$cat = new CMSCategory((int)$category['id_cms_category'], (int)$id_lang);
-				
+
 				$this->_menu .= '<li>';
 				$this->_menu .= '<a href="'.Tools::HtmlEntitiesUTF8($cat->getLink()).'">'.$category['name'].'</a>';
 				$this->getCMSMenuItems($category['id_cms_category'], (int)$depth + 1);
@@ -659,7 +659,7 @@ class Blocktopmenu extends Module
 	private function getCMSOptions($parent = 0, $depth = 1, $id_lang = false, $items_to_skip = null)
 	{
 		$html = '';
-		$id_lang = $id_lang ? (int)$id_lang : (int)Context::getContext()->language->id;		
+		$id_lang = $id_lang ? (int)$id_lang : (int)Context::getContext()->language->id;
 		$categories = $this->getCMSCategories(false, (int)$parent, (int)$id_lang);
 		$pages = $this->getCMSPages((int)$parent, false, (int)$id_lang);
 
@@ -678,7 +678,7 @@ class Blocktopmenu extends Module
 
 		return $html;
 	}
-	
+
 	protected function getCacheId($name = null)
 	{
 		$page_name = in_array($this->page_name, array('category', 'supplier', 'manufacturer', 'cms', 'product')) ? $this->page_name : 'index';
@@ -711,7 +711,7 @@ class Blocktopmenu extends Module
 		$html = $this->display(__FILE__, 'blocktopmenu.tpl', $this->getCacheId());
 		return $html;
 	}
-	
+
 	public function hookDisplayNav($params)
 	{
 		return $this->hookDisplayTop($params);
@@ -784,37 +784,37 @@ class Blocktopmenu extends Module
 	{
 		$this->clearMenuCache();
 	}
-	
+
 	public function hookActionObjectCategoryDeleteAfter($params)
 	{
 		$this->clearMenuCache();
 	}
-	
+
 	public function hookActionObjectCmsUpdateAfter($params)
 	{
 		$this->clearMenuCache();
 	}
-	
+
 	public function hookActionObjectCmsDeleteAfter($params)
 	{
 		$this->clearMenuCache();
 	}
-	
+
 	public function hookActionObjectCmsAddAfter($params)
 	{
 		$this->clearMenuCache();
 	}
-	
+
 	public function hookActionObjectSupplierUpdateAfter($params)
 	{
 		$this->clearMenuCache();
 	}
-	
+
 	public function hookActionObjectSupplierDeleteAfter($params)
 	{
 		$this->clearMenuCache();
 	}
-	
+
 	public function hookActionObjectSupplierAddAfter($params)
 	{
 		$this->clearMenuCache();
@@ -824,73 +824,73 @@ class Blocktopmenu extends Module
 	{
 		$this->clearMenuCache();
 	}
-	
+
 	public function hookActionObjectManufacturerDeleteAfter($params)
 	{
 		$this->clearMenuCache();
 	}
-	
+
 	public function hookActionObjectManufacturerAddAfter($params)
 	{
 		$this->clearMenuCache();
 	}
-	
+
 	public function hookActionObjectProductUpdateAfter($params)
 	{
 		$this->clearMenuCache();
 	}
-	
+
 	public function hookActionObjectProductDeleteAfter($params)
 	{
 		$this->clearMenuCache();
 	}
-	
+
 	public function hookActionObjectProductAddAfter($params)
 	{
 		$this->clearMenuCache();
 	}
-	
+
 	public function hookCategoryUpdate($params)
 	{
 		$this->clearMenuCache();
 	}
-	
+
 	private function clearMenuCache()
 	{
 		$this->_clearCache('blocktopmenu.tpl');
 	}
-	
+
 	public function hookActionShopDataDuplication($params)
 	{
 		$linksmenutop = Db::getInstance()->executeS('
 			SELECT *
-			FROM '._DB_PREFIX_.'linksmenutop 
+			FROM '._DB_PREFIX_.'linksmenutop
 			WHERE id_shop = '.(int)$params['old_id_shop']
 			);
 
 		foreach($linksmenutop as $id => $link)
 		{
 			Db::getInstance()->execute('
-				INSERT IGNORE INTO '._DB_PREFIX_.'linksmenutop (id_linksmenutop, id_shop, new_window) 
+				INSERT IGNORE INTO '._DB_PREFIX_.'linksmenutop (id_linksmenutop, id_shop, new_window)
 				VALUES (null, '.(int)$params['new_id_shop'].', '.(int)$link['new_window'].')');
-			
+
 			$linksmenutop[$id]['new_id_linksmenutop'] = Db::getInstance()->Insert_ID();
 		}
-		
+
 		foreach($linksmenutop as $id => $link)
 		{
 			$lang = Db::getInstance()->executeS('
-					SELECT id_lang, '.(int)$params['new_id_shop'].', label, link 
-					FROM '._DB_PREFIX_.'linksmenutop_lang 
+					SELECT id_lang, '.(int)$params['new_id_shop'].', label, link
+					FROM '._DB_PREFIX_.'linksmenutop_lang
 					WHERE id_linksmenutop = '.(int)$link['id_linksmenutop'].' AND id_shop = '.(int)$params['old_id_shop']);
-			
+
 			foreach($lang as $l)
 				Db::getInstance()->execute('
-					INSERT IGNORE INTO '._DB_PREFIX_.'linksmenutop_lang (id_linksmenutop, id_lang, id_shop, label, link) 
+					INSERT IGNORE INTO '._DB_PREFIX_.'linksmenutop_lang (id_linksmenutop, id_lang, id_shop, label, link)
 					VALUES ('.(int)$link['new_id_linksmenutop'].', '.(int)$l['id_lang'].', '.(int)$params['new_id_shop'].', '.(int)$l['label'].', '.(int)$l['link'].' )');
 		}
 	}
-	
+
 	public function renderForm()
 	{
 		$shops = Shop::getContextListShopID();
@@ -926,7 +926,7 @@ class Blocktopmenu extends Module
 									'label' => $this->l('Disabled')
 								)
 							),
-						)		
+						)
 					),
 					'submit' => array(
 						'name' => 'submitBlocktopmenu',
@@ -960,7 +960,7 @@ class Blocktopmenu extends Module
 									'label' => $this->l('Disabled')
 								)
 							),
-						)		
+						)
 					),
 					'submit' => array(
 						'name' => 'submitBlocktopmenu',
@@ -968,7 +968,7 @@ class Blocktopmenu extends Module
 					)
 				),
 			);
-		
+
 		$helper = new HelperForm();
 		$helper->show_toolbar = false;
 		$helper->table =  $this->table;
@@ -977,7 +977,7 @@ class Blocktopmenu extends Module
 		$helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') ? Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') : 0;
 		$this->fields_form = array();
 		$helper->module = $this;
-		$helper->identifier = $this->identifier;		
+		$helper->identifier = $this->identifier;
 		$helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false).'&configure='.$this->name.'&tab_module='.$this->tab.'&module_name='.$this->name;
 		$helper->token = Tools::getAdminTokenLite('AdminModules');
 		$helper->tpl_vars = array(
@@ -989,7 +989,7 @@ class Blocktopmenu extends Module
 		);
 		return $helper->generateForm(array($fields_form));
 	}
-	
+
 	public function renderAddForm()
 	{
 		$fields_form = array(
@@ -1028,7 +1028,7 @@ class Blocktopmenu extends Module
 								'label' => $this->l('Disabled')
 							)
 						),
-					)		
+					)
 				),
 				'submit' => array(
 					'name' => 'submitBlocktopmenuLinks',
@@ -1054,12 +1054,12 @@ class Blocktopmenu extends Module
 			);
 
 		if (Tools::isSubmit('updatelinksmenutop'))
-		{			
+		{
 			$fields_form['form']['input'][] = array('type' => 'hidden', 'name' => 'updatelink');
-			$fields_form['form']['input'][] = array('type' => 'hidden', 'name' => 'id_linksmenutop');			
+			$fields_form['form']['input'][] = array('type' => 'hidden', 'name' => 'id_linksmenutop');
 			$helper->fields_value['updatelink'] = '';
 		}
-			
+
 		$helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false).'&configure='.$this->name.'&tab_module='.$this->tab.'&module_name='.$this->name;
 		$helper->token = Tools::getAdminTokenLite('AdminModules');
 		$helper->languages =$this->context->controller->getLanguages();
@@ -1121,10 +1121,10 @@ class Blocktopmenu extends Module
 
 				if (!in_array('SHOP'.(int)$shop->id, $items))
 					$html .= '<option value="SHOP'.(int)$shop->id.'">'.$spacer.$shop->name.'</option>';
-			}	
+			}
 			$html .= '</optgroup>';
 		}
-		
+
 		// BEGIN Products
 		$html .= '<optgroup label="'.$this->l('Products').'">';
 		$html .= '<option value="PRODUCT" style="font-style:italic">'.$spacer.$this->l('Choose product ID').'</option>';
@@ -1153,7 +1153,7 @@ class Blocktopmenu extends Module
 
 	public function customGetNestedCategories($shop_id, $root_category = null, $id_lang = false, $active = true, $groups = null, $use_shop_restriction = true, $sql_filter = '', $sql_sort = '', $sql_limit = '')
 	{
-		
+
 
 		if (isset($root_category) && !Validate::isInt($root_category))
 			die(Tools::displayError());
@@ -1205,7 +1205,7 @@ class Blocktopmenu extends Module
 
 		return Cache::retrieve($cache_id);
 	}
-	
+
 	public function getConfigFieldsValues()
 	{
 		$shops = Shop::getContextListShopID();
@@ -1217,12 +1217,12 @@ class Blocktopmenu extends Module
 			$is_search_on &= (bool)Configuration::get('MOD_BLOCKTOPMENU_SEARCH', null, $shop_group_id, $shop_id);
 
 		}
-			
+
 		return array(
 			'search' => (int)$is_search_on
 		);
 	}
-	
+
 	public function getAddLinkFieldsValues()
 	{
 		$links_label_edit = '';
@@ -1235,8 +1235,8 @@ class Blocktopmenu extends Module
 			$links_label_edit = $link['link'];
 			$labels_edit = $link['label'];
 			$new_window_edit = $link['new_window'];
-		}			
-		
+		}
+
 		$fields_values = array(
 			'new_window' => Tools::getValue('new_window', $new_window_edit),
 			'id_linksmenutop' => Tools::getValue('id_linksmenutop'),
@@ -1256,10 +1256,10 @@ class Blocktopmenu extends Module
 				$fields_values['label'][$lang['id_lang']] = Tools::getValue('label_'.(int)$lang['id_lang'], isset($labels_edit[$lang['id_lang']]) ? $labels_edit[$lang['id_lang']] : '');
 				$fields_values['link'][$lang['id_lang']] = Tools::getValue('link_'.(int)$lang['id_lang'], isset($links_label_edit[$lang['id_lang']]) ? $links_label_edit[$lang['id_lang']] : '');
 			}
-		
-		return $fields_values;	
+
+		return $fields_values;
 	}
-	
+
 	public function renderList()
 	{
 		$shops = Shop::getContextListShopID();
@@ -1292,7 +1292,7 @@ class Blocktopmenu extends Module
 				'active' => 'status',
 			)
 		);
-		
+
 		$helper = new HelperList();
 		$helper->shopLinkType = '';
 		$helper->simple_header = true;
@@ -1301,10 +1301,10 @@ class Blocktopmenu extends Module
 		$helper->actions = array('edit', 'delete');
 		$helper->show_toolbar = false;
 		$helper->module = $this;
-		$helper->title = $this->l('Link list');	
+		$helper->title = $this->l('Link list');
 		$helper->token = Tools::getAdminTokenLite('AdminModules');
 		$helper->currentIndex = AdminController::$currentIndex.'&configure='.$this->name;
-				
+
 		return $helper->generateList($links, $fields_list);
 	}
 }
