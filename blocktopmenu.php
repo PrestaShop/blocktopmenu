@@ -52,7 +52,7 @@ class Blocktopmenu extends Module
 	{
 		$this->name = 'blocktopmenu';
 		$this->tab = 'front_office_features';
-		$this->version = '2.0.0';
+		$this->version = '2.0.1';
 		$this->author = 'PrestaShop';
 
 		$this->bootstrap = true;
@@ -176,7 +176,7 @@ class Blocktopmenu extends Module
  			if (!count($errors_update_shops))
 				$this->_html .= $this->displayConfirmation($this->l('The settings have been updated.'));
 			else
-				$this->_html .= $this->displayError(sprintf($this->l('Unable to update settings for the following shop(s) : %s'), implode(', ', $errors_update_shops)));
+				$this->_html .= $this->displayError(sprintf($this->l('Unable to update settings for the following shop(s): %s'), implode(', ', $errors_update_shops)));
 
 			$update_cache = true;
 		}
@@ -220,7 +220,7 @@ class Blocktopmenu extends Module
 					if (!count($errors_add_link))
 						$this->_html .= $this->displayConfirmation($this->l('The link has been added.'));
 					else
-						$this->_html .= $this->displayError(sprintf($this->l('Unable to add link for the following shop(s) : %s'), implode(', ', $errors_add_link)));
+						$this->_html .= $this->displayError(sprintf($this->l('Unable to add link for the following shop(s): %s'), implode(', ', $errors_add_link)));
 				}
 			}
 			$update_cache = true;
@@ -248,7 +248,7 @@ class Blocktopmenu extends Module
 			if (!count($errors_add_link))
 				$this->_html .= $this->displayConfirmation($this->l('The link has been removed.'));
 			else
-				$this->_html .= $this->displayError(sprintf($this->l('Unable to remove link for the following shop(s) : %s'), implode(', ', $errors_delete_link)));
+				$this->_html .= $this->displayError(sprintf($this->l('Unable to remove link for the following shop(s): %s'), implode(', ', $errors_delete_link)));
 
 			$update_cache = true;
 		}
@@ -303,7 +303,7 @@ class Blocktopmenu extends Module
 	private function getWarningMultishopHtml()
 	{
 		return '<p class="alert alert-warning">'.
-					$this->l('You can\'t manage top menu items from a "All Shops" or a "Group Shop" context, select directly the shop you want to edit').
+					$this->l('You cannot manage top menu items from a "All Shops" or a "Group Shop" context, select directly the shop you want to edit').
 				'</p>';
 	}
 
