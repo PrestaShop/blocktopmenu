@@ -941,7 +941,7 @@ class Blocktopmenu extends Module
 						'title' => $this->l('Menu Top Link'),
 						'icon' => 'icon-link'
 					),
-					'info' => '<div class="alert alert-warning">' .$this->l('All active products combinations quantities will be change').'</div>',
+					'info' => '<div class="alert alert-warning">' .$this->l('All active products combinations quantities will be changed').'</div>',
 					'input' => array(
 						array(
 							'type' => 'switch',
