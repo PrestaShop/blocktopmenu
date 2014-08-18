@@ -52,7 +52,7 @@ class Blocktopmenu extends Module
 	{
 		$this->name = 'blocktopmenu';
 		$this->tab = 'front_office_features';
-		$this->version = '2.0.1';
+		$this->version = '2.0.2';
 		$this->author = 'PrestaShop';
 
 		$this->bootstrap = true;
@@ -941,7 +941,7 @@ class Blocktopmenu extends Module
 						'title' => $this->l('Menu Top Link'),
 						'icon' => 'icon-link'
 					),
-					'info' => '<div class="alert alert-warning">' .$this->l('All active products combinations quantities will be change').'</div>',
+					'info' => '<div class="alert alert-warning">' .$this->l('All active products combinations quantities will be changed').'</div>',
 					'input' => array(
 						array(
 							'type' => 'switch',
