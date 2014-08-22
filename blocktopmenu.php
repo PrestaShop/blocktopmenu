@@ -599,7 +599,7 @@ class Blocktopmenu extends Module
 						$html .= '<li class="category-thumbnail">';
 
 						foreach ($files as $file)
-							if (preg_match('/'.$category['id_category'].'-([0-9])?_thumb.jpg/i', $file) === 1)
+							if (preg_match('/^'.$category['id_category'].'-([0-9])?_thumb.jpg/i', $file) === 1)
 								$html .= '<div><img src="'.$this->context->link->getMediaLink(_THEME_CAT_DIR_.$file)
 								.'" alt="'.Tools::SafeOutput($category['name']).'" title="'
 								.Tools::SafeOutput($category['name']).'" class="imgm" /></div>';
