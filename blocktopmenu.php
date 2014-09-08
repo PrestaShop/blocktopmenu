@@ -1233,9 +1233,8 @@ class Blocktopmenu extends Module
 		{
 			$link = MenuTopLinks::getLinkLang(Tools::getValue('id_linksmenutop'), (int)Shop::getContextShopID());
 
-			array_walk($link['label'], function(&$value) {
-				$value = Tools::htmlentitiesDecodeUTF8($value);
-			});
+			foreach ($link['link'] as $key => $label)
+				$link['link'][$key] = Tools::htmlentitiesDecodeUTF8($label);
 
 			$links_label_edit = $link['link'];
 			$labels_edit = $link['label'];
