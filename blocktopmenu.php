@@ -52,7 +52,7 @@ class Blocktopmenu extends Module
 	{
 		$this->name = 'blocktopmenu';
 		$this->tab = 'front_office_features';
-		$this->version = '2.0.3';
+		$this->version = '2.0.4';
 		$this->author = 'PrestaShop';
 
 		$this->bootstrap = true;
@@ -1233,9 +1233,8 @@ class Blocktopmenu extends Module
 		{
 			$link = MenuTopLinks::getLinkLang(Tools::getValue('id_linksmenutop'), (int)Shop::getContextShopID());
 
-			array_walk($link['label'], function(&$value) {
-				$value = Tools::htmlentitiesDecodeUTF8($value);
-			});
+			foreach ($link['link'] as $key => $label)
+				$link['link'][$key] = Tools::htmlentitiesDecodeUTF8($label);
 
 			$links_label_edit = $link['link'];
 			$labels_edit = $link['label'];
