@@ -309,8 +309,17 @@ class Blocktopmenu extends Module
 
 	private function getCurrentShopInfoMsg()
 	{
+		$shop_info = null;
+
+		if (Shop::getContext() == Shop::CONTEXT_SHOP)
+			$shop_info = $this->l(sprintf('The modifications will be applied to shop: %s', $this->context->shop->name));
+		else if (Shop::getContext() == Shop::CONTEXT_GROUP)
+			$shop_info = $this->l(sprintf('The modifications will be applied to this group: %s', Shop::getContextShopGroup()->name));
+		else
+			$shop_info = $this->l('The modifications will be applied to all shops');
+
 		return '<div class="alert alert-info">'.
-					$this->l('The modifications will be applied to').' '.(Shop::getContext() == Shop::CONTEXT_SHOP ? $this->l('shop').' '.$this->context->shop->name : $this->l('all shops')).
+					$shop_info.
 				'</div>';
 	}
 
