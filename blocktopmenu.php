@@ -63,12 +63,10 @@ class Blocktopmenu extends Module
 		$this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
 	}
 
-	public function install()
+	public function install($delete_params = true)
 	{
 		if (!parent::install() ||
 			!$this->registerHook('displayTop') ||
-			!Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_ITEMS', 'CAT3,CAT26') ||
-			!Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_SEARCH', '1') ||
 			!$this->registerHook('actionObjectCategoryUpdateAfter') ||
 			!$this->registerHook('actionObjectCategoryDeleteAfter') ||
 			!$this->registerHook('actionObjectCategoryAddAfter') ||
@@ -85,9 +83,13 @@ class Blocktopmenu extends Module
 			!$this->registerHook('actionObjectProductDeleteAfter') ||
 			!$this->registerHook('actionObjectProductAddAfter') ||
 			!$this->registerHook('categoryUpdate') ||
-			!$this->registerHook('actionShopDataDuplication') ||
-			!$this->installDB())
+			!$this->registerHook('actionShopDataDuplication'))
 			return false;
+
+		if ($delete_params)
+			if (!$this->installDb() || !Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_ITEMS', 'CAT3,CAT26') || !Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_SEARCH', '1'))
+				return false;
+
 		return true;
 	}
 
@@ -111,13 +113,15 @@ class Blocktopmenu extends Module
 		) ENGINE = '._MYSQL_ENGINE_.' CHARACTER SET utf8 COLLATE utf8_general_ci;'));
 	}
 
-	public function uninstall()
+	public function uninstall($delete_params = true)
 	{
-		if (!parent::uninstall() ||
-			!Configuration::deleteByName('MOD_BLOCKTOPMENU_ITEMS') ||
-			!Configuration::deleteByName('MOD_BLOCKTOPMENU_SEARCH') ||
-			!$this->uninstallDB())
+		if (!parent::uninstall())
 			return false;
+
+		if ($delete_params)
+			if (!$this->uninstallDB() || !Configuration::deleteByName('MOD_BLOCKTOPMENU_ITEMS') || !Configuration::deleteByName('MOD_BLOCKTOPMENU_SEARCH'))
+				return false;
+
 		return true;
 	}
 
@@ -125,6 +129,16 @@ class Blocktopmenu extends Module
 	{
 		Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'linksmenutop`');
 		Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'linksmenutop_lang`');
+		return true;
+	}
+
+	public function reset()
+	{
+		if (!$this->uninstall(false))
+			return false;
+		if (!$this->install(false))
+			return false;
+
 		return true;
 	}
 
