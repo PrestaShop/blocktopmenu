@@ -86,6 +86,8 @@ class Blocktopmenu extends Module
 			!$this->registerHook('actionShopDataDuplication'))
 			return false;
 
+		$this->clearMenuCache();
+
 		if ($delete_params)
 			if (!$this->installDb() || !Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_ITEMS', 'CAT3,CAT26') || !Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_SEARCH', '1'))
 				return false;
@@ -117,6 +119,8 @@ class Blocktopmenu extends Module
 	{
 		if (!parent::uninstall())
 			return false;
+
+		$this->clearMenuCache();
 
 		if ($delete_params)
 			if (!$this->uninstallDB() || !Configuration::deleteByName('MOD_BLOCKTOPMENU_ITEMS') || !Configuration::deleteByName('MOD_BLOCKTOPMENU_SEARCH'))
