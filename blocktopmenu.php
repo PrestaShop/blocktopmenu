@@ -594,7 +594,7 @@ class Blocktopmenu extends Module
 		return $html;
 	}
 
-	private function generateCategoriesMenu($categories)
+	private function generateCategoriesMenu($categories, $is_children = 0)
 	{
 		$html = '';
 
@@ -615,7 +615,7 @@ class Blocktopmenu extends Module
 			if (isset($category['children']) && !empty($category['children']))
 			{
 				$html .= '<ul>';
-				$html .= $this->generateCategoriesMenu($category['children']);
+				$html .= $this->generateCategoriesMenu($category['children'], 1);
 
 				if ((int)$category['level_depth'] > 1)
 				{
