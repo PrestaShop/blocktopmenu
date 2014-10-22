@@ -608,8 +608,15 @@ class Blocktopmenu extends Module
 			else
 				$link = $this->context->link->getPageLink('index');
 
-			$html .= '<li'.(($this->page_name == 'category'
-				&& (int)Tools::getValue('id_category') == (int)$category['id_category']) ? ' class="sfHoverForce"' : '').'>';
+			$li_classes = array();
+	
+			if ($this->page_name == 'category' && Tools::getValue('id_category') == $category['id_category'])
+	                	$li_classes[] = 'sfHoverForce';
+	
+			$li_classes[] = 'category'.$category['id_category'];
+
+			$html .= '<li'.(!empty($li_classes) ? ' class="'.implode(' ', $li_classes).'"' : '').'>';
+
 			$html .= '<a href="'.$link.'" title="'.$category['name'].'">'.$category['name'].'</a>';
 
 			if (isset($category['children']) && !empty($category['children']))
