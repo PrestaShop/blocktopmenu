@@ -263,7 +263,7 @@ class Blocktopmenu extends Module
 
 			}
 
-			if (!count($errors_add_link))
+			if (!count($errors_delete_link))
 				$this->_html .= $this->displayConfirmation($this->l('The link has been removed.'));
 			else
 				$this->_html .= $this->displayError(sprintf($this->l('Unable to remove link for the following shop(s): %s'), implode(', ', $errors_delete_link)));
