@@ -1,6 +1,6 @@
 <?php
 /*
-* 2007-2014 PrestaShop
+* 2007-2015 PrestaShop
 *
 * NOTICE OF LICENSE
 *
@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2014 PrestaShop SA
+*  @copyright  2007-2015 PrestaShop SA
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
@@ -330,9 +330,9 @@ class Blocktopmenu extends Module
 		$shop_info = null;
 
 		if (Shop::getContext() == Shop::CONTEXT_SHOP)
-			$shop_info = $this->l(sprintf('The modifications will be applied to shop: %s', $this->context->shop->name));
+			$shop_info = sprintf($this->l('The modifications will be applied to shop: %s', $this->context->shop->name));
 		else if (Shop::getContext() == Shop::CONTEXT_GROUP)
-			$shop_info = $this->l(sprintf('The modifications will be applied to this group: %s', Shop::getContextShopGroup()->name));
+			$shop_info = sprintf($this->l('The modifications will be applied to this group: %s', Shop::getContextShopGroup()->name));
 		else
 			$shop_info = $this->l('The modifications will be applied to all shops');
 
