@@ -373,7 +373,7 @@ class Blocktopmenu extends Module
 		}
 	}
 
-	private function makeMenuOption()
+	protected function makeMenuOption()
 	{
 		$id_shop = (int)Shop::getContextShopID();
 
@@ -461,7 +461,7 @@ class Blocktopmenu extends Module
 		return $html.'</select>';
 	}
 
-	private function makeMenu()
+	protected function makeMenu()
 	{
 		$menu_items = $this->getMenuItems();
 		$id_lang = (int)$this->context->language->id;
@@ -574,7 +574,7 @@ class Blocktopmenu extends Module
 		}
 	}
 
-	private function generateCategoriesOption($categories, $items_to_skip = null)
+	protected function generateCategoriesOption($categories, $items_to_skip = null)
 	{
 		$html = '';
 
@@ -594,7 +594,7 @@ class Blocktopmenu extends Module
 		return $html;
 	}
 
-	private function generateCategoriesMenu($categories, $is_children = 0)
+	protected function generateCategoriesMenu($categories, $is_children = 0)
 	{
 		$html = '';
 
@@ -644,7 +644,7 @@ class Blocktopmenu extends Module
 		return $html;
 	}
 
-	private function getCMSMenuItems($parent, $depth = 1, $id_lang = false)
+	protected function getCMSMenuItems($parent, $depth = 1, $id_lang = false)
 	{
 		$id_lang = $id_lang ? (int)$id_lang : (int)Context::getContext()->language->id;
 
@@ -683,7 +683,7 @@ class Blocktopmenu extends Module
 		}
 	}
 
-	private function getCMSOptions($parent = 0, $depth = 1, $id_lang = false, $items_to_skip = null)
+	protected function getCMSOptions($parent = 0, $depth = 1, $id_lang = false, $items_to_skip = null)
 	{
 		$html = '';
 		$id_lang = $id_lang ? (int)$id_lang : (int)Context::getContext()->language->id;
