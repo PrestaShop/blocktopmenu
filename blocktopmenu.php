@@ -330,9 +330,9 @@ class Blocktopmenu extends Module
 		$shop_info = null;
 
 		if (Shop::getContext() == Shop::CONTEXT_SHOP)
-			$shop_info = sprintf($this->l('The modifications will be applied to shop: %s', $this->context->shop->name));
+			$shop_info = sprintf($this->l('The modifications will be applied to shop: %s'), $this->context->shop->name);
 		else if (Shop::getContext() == Shop::CONTEXT_GROUP)
-			$shop_info = sprintf($this->l('The modifications will be applied to this group: %s', Shop::getContextShopGroup()->name));
+			$shop_info = sprintf($this->l('The modifications will be applied to this group: %s'), Shop::getContextShopGroup()->name);
 		else
 			$shop_info = $this->l('The modifications will be applied to all shops');
 
