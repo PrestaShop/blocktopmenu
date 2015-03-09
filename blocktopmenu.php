@@ -683,12 +683,13 @@ class Blocktopmenu extends Module
 		}
 	}
 
-	protected function getCMSOptions($parent = 0, $depth = 1, $id_lang = false, $items_to_skip = null)
+	protected function getCMSOptions($parent = 0, $depth = 1, $id_lang = false, $items_to_skip = null, $id_shop = false)
 	{
 		$html = '';
 		$id_lang = $id_lang ? (int)$id_lang : (int)Context::getContext()->language->id;
-		$categories = $this->getCMSCategories(false, (int)$parent, (int)$id_lang);
-		$pages = $this->getCMSPages((int)$parent, false, (int)$id_lang);
+		$id_shop = ($id_shop !== false) ? $id_shop : Context::getContext()->shop->id;
+		$categories = $this->getCMSCategories(false, (int)$parent, (int)$id_lang, (int)$id_shop);
+		$pages = $this->getCMSPages((int)$parent, false, (int)$id_lang, (int)$id_shop);
 
 		$spacer = str_repeat('&nbsp;', $this->spacer_size * (int)$depth);
 
@@ -744,29 +745,43 @@ class Blocktopmenu extends Module
 		return $this->hookDisplayTop($params);
 	}
 
-	private function getCMSCategories($recursive = false, $parent = 1, $id_lang = false)
+	private function getCMSCategories($recursive = false, $parent = 1, $id_lang = false, $id_shop = false)
 	{
 		$id_lang = $id_lang ? (int)$id_lang : (int)Context::getContext()->language->id;
+		$id_shop = ($id_shop !== false) ? $id_shop : Context::getContext()->shop->id;
+		$join_shop = '';
+		$where_shop = '';
+
+		if (Tools::version_compare(_PS_VERSION_, '1.6.0.12', '>=') == true)
+		{
+			$join_shop = ' INNER JOIN `'._DB_PREFIX_.'cms_category_shop` cs
+			ON (bcp.`id_cms_category` = cs.`id_cms_category`)';
+			$where_shop = ' AND cs.`id_shop` = '.(int)$id_shop.' AND cl.`id_shop` = '.(int)$id_shop;
+		}
 
 		if ($recursive === false)
 		{
 			$sql = 'SELECT bcp.`id_cms_category`, bcp.`id_parent`, bcp.`level_depth`, bcp.`active`, bcp.`position`, cl.`name`, cl.`link_rewrite`
-				FROM `'._DB_PREFIX_.'cms_category` bcp
+				FROM `'._DB_PREFIX_.'cms_category` bcp'.
+				$join_shop.'
 				INNER JOIN `'._DB_PREFIX_.'cms_category_lang` cl
 				ON (bcp.`id_cms_category` = cl.`id_cms_category`)
 				WHERE cl.`id_lang` = '.(int)$id_lang.'
-				AND bcp.`id_parent` = '.(int)$parent;
+				AND bcp.`id_parent` = '.(int)$parent.
+				$where_shop;
 
 			return Db::getInstance()->executeS($sql);
 		}
 		else
 		{
 			$sql = 'SELECT bcp.`id_cms_category`, bcp.`id_parent`, bcp.`level_depth`, bcp.`active`, bcp.`position`, cl.`name`, cl.`link_rewrite`
-				FROM `'._DB_PREFIX_.'cms_category` bcp
+				FROM `'._DB_PREFIX_.'cms_category` bcp'.
+				$join_shop.'
 				INNER JOIN `'._DB_PREFIX_.'cms_category_lang` cl
 				ON (bcp.`id_cms_category` = cl.`id_cms_category`)
 				WHERE cl.`id_lang` = '.(int)$id_lang.'
-				AND bcp.`id_parent` = '.(int)$parent;
+				AND bcp.`id_parent` = '.(int)$parent.
+				$where_shop;
 
 			$results = Db::getInstance()->executeS($sql);
 			foreach ($results as $result)
@@ -782,10 +797,14 @@ class Blocktopmenu extends Module
 
 	}
 
-	private function getCMSPages($id_cms_category, $id_shop = false, $id_lang = false)
+	private function getCMSPages($id_cms_category, $id_shop = false, $id_lang = false, $id_shop = false)
 	{
 		$id_shop = ($id_shop !== false) ? (int)$id_shop : (int)Context::getContext()->shop->id;
 		$id_lang = $id_lang ? (int)$id_lang : (int)Context::getContext()->language->id;
+
+		$where_shop = '';
+		if (Tools::version_compare(_PS_VERSION_, '1.6.0.12', '>=') == true)
+			$where_shop = ' AND cl.`id_shop` = '.(int)$id_shop;
 
 		$sql = 'SELECT c.`id_cms`, cl.`meta_title`, cl.`link_rewrite`
 			FROM `'._DB_PREFIX_.'cms` c
@@ -795,7 +814,8 @@ class Blocktopmenu extends Module
 			ON (c.`id_cms` = cl.`id_cms`)
 			WHERE c.`id_cms_category` = '.(int)$id_cms_category.'
 			AND cs.`id_shop` = '.(int)$id_shop.'
-			AND cl.`id_lang` = '.(int)$id_lang.'
+			AND cl.`id_lang` = '.(int)$id_lang.
+			$where_shop.'
 			AND c.`active` = 1
 			ORDER BY `position`';
 
