@@ -66,6 +66,7 @@ class Blocktopmenu extends Module
 	public function install($delete_params = true)
 	{
 		if (!parent::install() ||
+			!$this->registerHook('header') ||
 			!$this->registerHook('displayTop') ||
 			!$this->registerHook('actionObjectCategoryUpdateAfter') ||
 			!$this->registerHook('actionObjectCategoryDeleteAfter') ||
@@ -713,6 +714,15 @@ class Blocktopmenu extends Module
 		return parent::getCacheId().'|'.$page_name.($page_name != 'index' ? '|'.(int)Tools::getValue('id_'.$page_name) : '');
 	}
 
+	public function hookHeader()
+	{
+		$this->context->controller->addJS($this->_path.'js/hoverIntent.js');
+		$this->context->controller->addJS($this->_path.'js/superfish-modified.js');
+		$this->context->controller->addJS($this->_path.'js/blocktopmenu.js');
+		$this->context->controller->addCSS($this->_path.'css/blocktopmenu.css');
+		$this->context->controller->addCSS($this->_path.'css/superfish-modified.css');
+	}
+
 	public function hookDisplayTop($param)
 	{
 		$this->user_groups = ($this->context->customer->isLogged() ?
@@ -730,12 +740,6 @@ class Blocktopmenu extends Module
 			$this->smarty->assign('MENU', $this->_menu);
 			$this->smarty->assign('this_path', $this->_path);
 		}
-
-		$this->context->controller->addJS($this->_path.'js/hoverIntent.js');
-		$this->context->controller->addJS($this->_path.'js/superfish-modified.js');
-		$this->context->controller->addJS($this->_path.'js/blocktopmenu.js');
-		$this->context->controller->addCSS($this->_path.'css/blocktopmenu.css');
-		$this->context->controller->addCSS($this->_path.'css/superfish-modified.css');
 
 		$html = $this->display(__FILE__, 'blocktopmenu.tpl', $this->getCacheId());
 		return $html;
