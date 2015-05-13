@@ -610,10 +610,10 @@ class Blocktopmenu extends Module
 
 			$li_classes = array();
 	
-			if ($this->page_name == 'category' && Tools::getValue('id_category') == $category['id_category'])
+			if ($this->page_name == 'category' && (int)Tools::getValue('id_category') == (int)$category['id_category'])
 	                	$li_classes[] = 'sfHoverForce';
 	
-			$li_classes[] = 'category'.$category['id_category'];
+			$li_classes[] = 'category'.(int)$category['id_category'];
 
 			$html .= '<li'.(!empty($li_classes) ? ' class="'.implode(' ', $li_classes).'"' : '').'>';
 
