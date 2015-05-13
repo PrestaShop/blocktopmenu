@@ -28,25 +28,25 @@ require (dirname(__FILE__).'/menutoplinks.class.php');
 
 class Blocktopmenu extends Module
 {
-	private $_menu = '';
-	private $_html = '';
-	private $user_groups;
+	protected $_menu = '';
+	protected $_html = '';
+	protected $user_groups;
 
 	/*
 	 * Pattern for matching config values
 	 */
-	private $pattern = '/^([A-Z_]*)[0-9]+/';
+	protected $pattern = '/^([A-Z_]*)[0-9]+/';
 
 	/*
 	 * Name of the controller
 	 * Used to set item selected or not in top menu
 	 */
-	private $page_name = '';
+	protected $page_name = '';
 
 	/*
 	 * Spaces per depth in BO
 	 */
-	private $spacer_size = '5';
+	protected $spacer_size = '5';
 
 	public function __construct()
 	{
@@ -130,7 +130,7 @@ class Blocktopmenu extends Module
 		return true;
 	}
 
-	private function uninstallDb()
+	protected function uninstallDb()
 	{
 		Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'linksmenutop`');
 		Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'linksmenutop_lang`');
@@ -319,14 +319,14 @@ class Blocktopmenu extends Module
 		return $this->_html;
 	}
 
-	private function getWarningMultishopHtml()
+	protected function getWarningMultishopHtml()
 	{
 		return '<p class="alert alert-warning">'.
 					$this->l('You cannot manage top menu items from a "All Shops" or a "Group Shop" context, select directly the shop you want to edit').
 				'</p>';
 	}
 
-	private function getCurrentShopInfoMsg()
+	protected function getCurrentShopInfoMsg()
 	{
 		$shop_info = null;
 
@@ -342,7 +342,7 @@ class Blocktopmenu extends Module
 				'</div>';
 	}
 
-	private function getMenuItems()
+	protected function getMenuItems()
 	{
 		$items = Tools::getValue('items');
 		if (is_array($items) && count($items))
@@ -750,7 +750,7 @@ class Blocktopmenu extends Module
 		return $this->hookDisplayTop($params);
 	}
 
-	private function getCMSCategories($recursive = false, $parent = 1, $id_lang = false, $id_shop = false)
+	protected function getCMSCategories($recursive = false, $parent = 1, $id_lang = false, $id_shop = false)
 	{
 		$id_lang = $id_lang ? (int)$id_lang : (int)Context::getContext()->language->id;
 		$id_shop = ($id_shop !== false) ? $id_shop : Context::getContext()->shop->id;
@@ -802,7 +802,7 @@ class Blocktopmenu extends Module
 
 	}
 
-	private function getCMSPages($id_cms_category, $id_shop = false, $id_lang = false, $id_shop = false)
+	protected function getCMSPages($id_cms_category, $id_shop = false, $id_lang = false, $id_shop = false)
 	{
 		$id_shop = ($id_shop !== false) ? (int)$id_shop : (int)Context::getContext()->shop->id;
 		$id_lang = $id_lang ? (int)$id_lang : (int)Context::getContext()->language->id;
@@ -907,7 +907,7 @@ class Blocktopmenu extends Module
 		$this->clearMenuCache();
 	}
 
-	private function clearMenuCache()
+	protected function clearMenuCache()
 	{
 		$this->_clearCache('blocktopmenu.tpl');
 	}
