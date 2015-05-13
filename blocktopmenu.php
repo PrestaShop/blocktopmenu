@@ -177,22 +177,22 @@ class Blocktopmenu extends Module
 				if (count($shops) == 1)
 				{
 					if (is_array($items) && count($items))
-		 				$updated = Configuration::updateValue('MOD_BLOCKTOPMENU_ITEMS', (string)implode(',', $items), false, (int)$shop_group_id, (int)$shop_id);
-		 			else
-		 				$updated = Configuration::updateValue('MOD_BLOCKTOPMENU_ITEMS', '', false, (int)$shop_group_id, (int)$shop_id);
-		 		}
+						$updated = Configuration::updateValue('MOD_BLOCKTOPMENU_ITEMS', (string)implode(',', $items), false, (int)$shop_group_id, (int)$shop_id);
+					else
+						$updated = Configuration::updateValue('MOD_BLOCKTOPMENU_ITEMS', '', false, (int)$shop_group_id, (int)$shop_id);
+				}
 
-		 		$updated &= Configuration::updateValue('MOD_BLOCKTOPMENU_SEARCH', (bool)Tools::getValue('search'), false, (int)$shop_group_id, (int)$shop_id);
+				$updated &= Configuration::updateValue('MOD_BLOCKTOPMENU_SEARCH', (bool)Tools::getValue('search'), false, (int)$shop_group_id, (int)$shop_id);
 
-	 			if (!$updated)
-	 			{
-	 				$shop = new Shop($shop_id);
-	 				$errors_update_shops[] =  $shop->name;
-	 			}
+				if (!$updated)
+				{
+					$shop = new Shop($shop_id);
+					$errors_update_shops[] =  $shop->name;
+				}
 
 			}
 
- 			if (!count($errors_update_shops))
+			if (!count($errors_update_shops))
 				$this->_html .= $this->displayConfirmation($this->l('The settings have been updated.'));
 			else
 				$this->_html .= $this->displayError(sprintf($this->l('Unable to update settings for the following shop(s): %s'), implode(', ', $errors_update_shops)));
@@ -231,7 +231,7 @@ class Blocktopmenu extends Module
 						if (!$added)
 						{
 							$shop = new Shop($shop_id);
- 							$errors_add_link[] =  $shop->name;
+							$errors_add_link[] =  $shop->name;
 						}
 
 					}
