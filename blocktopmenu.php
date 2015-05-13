@@ -90,7 +90,7 @@ class Blocktopmenu extends Module
 		$this->clearMenuCache();
 
 		if ($delete_params)
-			if (!$this->installDb() || !Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_ITEMS', 'CAT3,CAT26') || !Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_SEARCH', '1'))
+			if (!$this->installDb() || !Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_ITEMS', 'CAT3,CAT26') || !Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_SEARCH', '1') || !Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_SHOW_SUBMENU', '1'))
 				return false;
 
 		return true;
@@ -124,7 +124,7 @@ class Blocktopmenu extends Module
 		$this->clearMenuCache();
 
 		if ($delete_params)
-			if (!$this->uninstallDB() || !Configuration::deleteByName('MOD_BLOCKTOPMENU_ITEMS') || !Configuration::deleteByName('MOD_BLOCKTOPMENU_SEARCH'))
+			if (!$this->uninstallDB() || !Configuration::deleteByName('MOD_BLOCKTOPMENU_ITEMS') || !Configuration::deleteByName('MOD_BLOCKTOPMENU_SEARCH') || !Configuration::deleteByName('MOD_BLOCKTOPMENU_SHOW_SUBMENU'))
 				return false;
 
 		return true;
@@ -183,6 +183,7 @@ class Blocktopmenu extends Module
 		 		}
 
 		 		$updated &= Configuration::updateValue('MOD_BLOCKTOPMENU_SEARCH', (bool)Tools::getValue('search'), false, (int)$shop_group_id, (int)$shop_id);
+				$updated &= Configuration::updateValue('MOD_BLOCKTOPMENU_SHOW_SUBMENU', (bool)Tools::getValue('showsubmenu'), false, (int)$shop_group_id, (int)$shop_id);
 
 	 			if (!$updated)
 	 			{
@@ -613,32 +614,37 @@ class Blocktopmenu extends Module
 				&& (int)Tools::getValue('id_category') == (int)$category['id_category']) ? ' class="sfHoverForce"' : '').'>';
 			$html .= '<a href="'.$link.'" title="'.$category['name'].'">'.$category['name'].'</a>';
 
-			if (isset($category['children']) && !empty($category['children']))
-			{
-				$html .= '<ul>';
-				$html .= $this->generateCategoriesMenu($category['children'], 1);
-
-				if ((int)$category['level_depth'] > 1 && !$is_children)
+			
+			$shop_id = (int)$this->context->shop->id;
+			$shop_group_id = Shop::getGroupFromShop($shop_id);
+			if(Configuration::get('MOD_BLOCKTOPMENU_SHOW_SUBMENU', null, $shop_group_id, $shop_id)) {
+				if (isset($category['children']) && !empty($category['children']))
 				{
-					$files = scandir(_PS_CAT_IMG_DIR_);
+					$html .= '<ul>';
+					$html .= $this->generateCategoriesMenu($category['children'], 1);
 
-					if (count($files) > 0)
+					if ((int)$category['level_depth'] > 1 && !$is_children)
 					{
-						$html .= '<li class="category-thumbnail">';
+						$files = scandir(_PS_CAT_IMG_DIR_);
 
-						foreach ($files as $file)
-							if (preg_match('/^'.$category['id_category'].'-([0-9])?_thumb.jpg/i', $file) === 1)
-								$html .= '<div><img src="'.$this->context->link->getMediaLink(_THEME_CAT_DIR_.$file)
-								.'" alt="'.Tools::SafeOutput($category['name']).'" title="'
-								.Tools::SafeOutput($category['name']).'" class="imgm" /></div>';
+						if (count($files) > 0)
+						{
+							$html .= '<li class="category-thumbnail">';
 
-						$html .= '</li>';
+							foreach ($files as $file)
+								if (preg_match('/^'.$category['id_category'].'-([0-9])?_thumb.jpg/i', $file) === 1)
+									$html .= '<div><img src="'.$this->context->link->getMediaLink(_THEME_CAT_DIR_.$file)
+									.'" alt="'.Tools::SafeOutput($category['name']).'" title="'
+									.Tools::SafeOutput($category['name']).'" class="imgm" /></div>';
+
+							$html .= '</li>';
+						}
 					}
+
+					$html .= '</ul>';
 				}
-
-				$html .= '</ul>';
 			}
-
+			
 			$html .= '</li>';
 		}
 
@@ -737,6 +743,7 @@ class Blocktopmenu extends Module
 			$shop_group_id = Shop::getGroupFromShop($shop_id);
 
 			$this->smarty->assign('MENU_SEARCH', Configuration::get('MOD_BLOCKTOPMENU_SEARCH', null, $shop_group_id, $shop_id));
+			$this->smarty->assign('MENU_SHOWSUBMENU', Configuration::get('MOD_BLOCKTOPMENU_SHOW_SUBMENU', null, $shop_group_id, $shop_id));
 			$this->smarty->assign('MENU', $this->_menu);
 			$this->smarty->assign('this_path', $this->_path);
 		}
@@ -978,6 +985,24 @@ class Blocktopmenu extends Module
 									'label' => $this->l('Disabled')
 								)
 							),
+						),
+						array(
+							'type' => 'switch',
+							'label' => $this->l('Show Menu Children'),
+							'name' => 'showsubmenu',
+							'is_bool' => true,
+							'values' => array(
+								array(
+									'id' => 'active_on',
+									'value' => 1,
+									'label' => $this->l('Enabled')
+								),
+								array(
+									'id' => 'active_off',
+									'value' => 0,
+									'label' => $this->l('Disabled')
+								)
+							),
 						)
 					),
 					'submit' => array(
@@ -1000,6 +1025,26 @@ class Blocktopmenu extends Module
 							'type' => 'switch',
 							'label' => $this->l('Search bar'),
 							'name' => 'search',
+							'is_bool' => true,
+							'values' => array(
+								array(
+									'id' => 'active_on',
+									'value' => 1,
+									'label' => $this->l('Enabled')
+								),
+								array(
+									'id' => 'active_off',
+									'value' => 0,
+									'label' => $this->l('Disabled')
+								)
+							),
+						)
+					),
+					'input' => array(
+						array(
+							'type' => 'switch',
+							'label' => $this->l('Show Children Menu'),
+							'name' => 'showsubmenu',
 							'is_bool' => true,
 							'values' => array(
 								array(
@@ -1260,16 +1305,19 @@ class Blocktopmenu extends Module
 	{
 		$shops = Shop::getContextListShopID();
 		$is_search_on = true;
+		$is_showsubmenu_on = true;
 
 		foreach ($shops as $shop_id)
 		{
-			$shop_group_id = Shop::getGroupFromShop($shop_id);
-			$is_search_on &= (bool)Configuration::get('MOD_BLOCKTOPMENU_SEARCH', null, $shop_group_id, $shop_id);
+			$shop_group_id      = Shop::getGroupFromShop($shop_id);
+			$is_search_on      &= (bool)Configuration::get('MOD_BLOCKTOPMENU_SEARCH', null, $shop_group_id, $shop_id);
+			$is_showsubmenu_on &= (bool)Configuration::get('MOD_BLOCKTOPMENU_SHOW_SUBMENU', null, $shop_group_id, $shop_id);
 
 		}
 
 		return array(
-			'search' => (int)$is_search_on
+			'search'      => (int)$is_search_on,
+			'showsubmenu' => (int)$is_showsubmenu_on
 		);
 	}
 
