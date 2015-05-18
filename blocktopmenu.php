@@ -622,7 +622,7 @@ class Blocktopmenu extends Module
 				{
 					$files = scandir(_PS_CAT_IMG_DIR_);
 
-					if (count($files) > 0)
+					if (count(preg_grep('/^'.$category['id_category'].'-([0-9])?_thumb.jpg/i', $files)) > 0)
 					{
 						$html .= '<li class="category-thumbnail">';
 
