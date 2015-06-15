@@ -794,7 +794,7 @@ class Blocktopmenu extends Module
         }
     }
 
-    protected function getCMSPages($id_cms_category, $id_shop = false, $id_lang = false, $id_shop = false)
+    protected function getCMSPages($id_cms_category, $id_shop = false, $id_lang = false)
     {
         $id_shop = ($id_shop !== false) ? (int)$id_shop : (int)Context::getContext()->shop->id;
         $id_lang = $id_lang ? (int)$id_lang : (int)Context::getContext()->language->id;
