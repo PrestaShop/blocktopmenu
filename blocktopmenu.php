@@ -468,6 +468,8 @@ class Blocktopmenu extends Module
 		$id_lang = (int)$this->context->language->id;
 		$id_shop = (int)Shop::getContextShopID();
 
+		//var_dump($menu_items);die('end');
+
 		foreach ($menu_items as $item)
 		{
 			if (!$item)
@@ -479,7 +481,7 @@ class Blocktopmenu extends Module
 			switch (substr($item, 0, strlen($value[1])))
 			{
 				case 'CAT':
-					$this->_menu .= $this->generateCategoriesMenu(Category::getNestedCategories($id, $id_lang, true, $this->user_groups));
+					$this->_menu .= $this->generateCategoriesMenu(Category::getNestedCategories($id, $id_lang, false, $this->user_groups));
 					break;
 
 				case 'PRD':
@@ -608,6 +610,11 @@ class Blocktopmenu extends Module
 			}
 			else
 				$link = $this->context->link->getPageLink('index');
+
+			/* Whenever a category is not active we shouldnt display it to customer */
+			if ((bool)$cat->active === false) {
+				break;
+			}
 
 			$html .= '<li'.(($this->page_name == 'category'
 				&& (int)Tools::getValue('id_category') == (int)$category['id_category']) ? ' class="sfHoverForce"' : '').'>';
@@ -1161,7 +1168,7 @@ class Blocktopmenu extends Module
 		$shops_to_get = Shop::getContextListShopID();
 
 		foreach ($shops_to_get as $shop_id)
-			$html .= $this->generateCategoriesOption($this->customGetNestedCategories($shop_id, null, (int)$this->context->language->id, true), $items);
+			$html .= $this->generateCategoriesOption($this->customGetNestedCategories($shop_id, null, (int)$this->context->language->id, false), $items);
 		$html .= '</optgroup>';
 
 		// BEGIN Shops
@@ -1206,7 +1213,7 @@ class Blocktopmenu extends Module
 	}
 
 
-	public function customGetNestedCategories($shop_id, $root_category = null, $id_lang = false, $active = true, $groups = null, $use_shop_restriction = true, $sql_filter = '', $sql_sort = '', $sql_limit = '')
+	public function customGetNestedCategories($shop_id, $root_category = null, $id_lang = false, $active = false, $groups = null, $use_shop_restriction = true, $sql_filter = '', $sql_sort = '', $sql_limit = '')
 	{
 		if (isset($root_category) && !Validate::isInt($root_category))
 			die(Tools::displayError());
