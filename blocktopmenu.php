@@ -468,8 +468,6 @@ class Blocktopmenu extends Module
 		$id_lang = (int)$this->context->language->id;
 		$id_shop = (int)Shop::getContextShopID();
 
-		//var_dump($menu_items);die('end');
-
 		foreach ($menu_items as $item)
 		{
 			if (!$item)
