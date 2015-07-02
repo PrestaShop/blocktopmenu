@@ -695,7 +695,7 @@ class Blocktopmenu extends Module
 		$id_lang = $id_lang ? (int)$id_lang : (int)Context::getContext()->language->id;
 		$id_shop = ($id_shop !== false) ? $id_shop : Context::getContext()->shop->id;
 		$categories = $this->getCMSCategories(false, (int)$parent, (int)$id_lang, (int)$id_shop);
-		$pages = $this->getCMSPages((int)$parent, false, (int)$id_lang, (int)$id_shop);
+		$pages = $this->getCMSPages((int)$parent, (int)$id_shop, (int)$id_lang);
 
 		$spacer = str_repeat('&nbsp;', $this->spacer_size * (int)$depth);
 
