@@ -601,7 +601,7 @@ class Blocktopmenu extends Module
 
 		foreach ($categories as $key => $category)
 		{
-			if ($category['level_depth'] > 1)
+			if ($category['level_depth'] >= 1)
 			{
 				$cat = new Category($category['id_category']);
 				$link = Tools::HtmlEntitiesUTF8($cat->getLink());
@@ -610,7 +610,7 @@ class Blocktopmenu extends Module
 				$link = $this->context->link->getPageLink('index');
 
 			/* Whenever a category is not active we shouldnt display it to customer */
-			if ((bool)$cat->active === false) {
+			if (empty($cat->active)) {
 				break;
 			}
 
