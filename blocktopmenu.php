@@ -604,7 +604,7 @@ class Blocktopmenu extends Module
 
             /* Whenever a category is not active we shouldnt display it to customer */
             if ((bool)$category['active'] === false) {
-                break;
+                continue;
             }
 
             $html .= '<li'.(($this->page_name == 'category'
