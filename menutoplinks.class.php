@@ -77,27 +77,27 @@ class MenuTopLinks
         }
 
         Db::getInstance()->insert(
-			'linksmenutop',
-			array(
-				'new_window'=>(int)$newWindow,
-				'id_shop' => (int)$id_shop
-			)
-		);
+            'linksmenutop',
+            array(
+                'new_window'=>(int)$newWindow,
+                'id_shop' => (int)$id_shop
+            )
+        );
         $id_linksmenutop = Db::getInstance()->Insert_ID();
 
         $result = true;
 
         foreach ($label as $id_lang=>$label) {
             $result &= Db::getInstance()->insert(
-			'linksmenutop_lang',
-			array(
-				'id_linksmenutop'=>(int)$id_linksmenutop,
-				'id_lang'=>(int)$id_lang,
-				'id_shop'=>(int)$id_shop,
-				'label'=>pSQL($label),
-				'link'=>pSQL($link[$id_lang])
-			)
-		);
+            'linksmenutop_lang',
+            array(
+                'id_linksmenutop'=>(int)$id_linksmenutop,
+                'id_lang'=>(int)$id_lang,
+                'id_shop'=>(int)$id_shop,
+                'label'=>pSQL($label),
+                'link'=>pSQL($link[$id_lang])
+            )
+        );
         }
 
         return $result;
@@ -113,24 +113,24 @@ class MenuTopLinks
         }
 
         Db::getInstance()->update(
-			'linksmenutop',
-			array(
-				'new_window'=>(int)$newWindow,
-				'id_shop' => (int)$id_shop
-			),
-			'id_linksmenutop = '.(int)$id_link
-		);
+            'linksmenutop',
+            array(
+                'new_window'=>(int)$newWindow,
+                'id_shop' => (int)$id_shop
+            ),
+            'id_linksmenutop = '.(int)$id_link
+        );
 
         foreach ($labels as $id_lang => $label) {
             Db::getInstance()->update(
-				'linksmenutop_lang',
-				array(
-					'id_shop'=>(int)$id_shop,
-					'label'=>pSQL($label),
-					'link'=>pSQL($link[$id_lang])
-				),
-				'id_linksmenutop = '.(int)$id_link.' AND id_lang = '.(int)$id_lang
-			);
+                'linksmenutop_lang',
+                array(
+                    'id_shop'=>(int)$id_shop,
+                    'label'=>pSQL($label),
+                    'link'=>pSQL($link[$id_lang])
+                ),
+                'id_linksmenutop = '.(int)$id_link.' AND id_lang = '.(int)$id_lang
+            );
         }
     }
 
@@ -140,7 +140,7 @@ class MenuTopLinks
         $result = true;
         $result &= Db::getInstance()->delete('linksmenutop', 'id_linksmenutop = '.(int)$id_linksmenutop.' AND id_shop = '.(int)$id_shop);
         $result &= Db::getInstance()->delete('linksmenutop_lang', 'id_linksmenutop = '.(int)$id_linksmenutop);
-		
+        
         return $result;
     }
 }
