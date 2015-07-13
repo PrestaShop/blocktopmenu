@@ -66,7 +66,7 @@ class Blocktopmenu extends Module
     public function install($delete_params = true)
     {
         if (!parent::install() ||
-            !$this->registerHook('header') ||
+            !$this->registerHook('displayHeader') ||
             !$this->registerHook('displayTop') ||
             !$this->registerHook('actionObjectCategoryUpdateAfter') ||
             !$this->registerHook('actionObjectCategoryDeleteAfter') ||
@@ -711,7 +711,7 @@ class Blocktopmenu extends Module
         return parent::getCacheId().'|'.$page_name.($page_name != 'index' ? '|'.(int)Tools::getValue('id_'.$page_name) : '');
     }
 
-    public function hookHeader()
+    public function hookDisplayHeader()
     {
         $this->context->controller->addJS($this->_path.'js/hoverIntent.js');
         $this->context->controller->addJS($this->_path.'js/superfish-modified.js');
