@@ -52,7 +52,7 @@ class Blocktopmenu extends Module
     {
         $this->name = 'blocktopmenu';
         $this->tab = 'front_office_features';
-        $this->version = '2.2.1';
+        $this->version = '2.2.2';
         $this->author = 'PrestaShop';
 
         $this->bootstrap = true;
