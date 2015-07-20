@@ -1,6 +1,6 @@
 {
-  "name": "PrestaShop/modules/blocktopmenu",
-  "description": "Prestashop module blocktopmenu",
+  "name": "PrestaShop/blocktopmenu",
+  "description": "PrestaShop module blocktopmenu",
   "homepage": "https://github.com/PrestaShop/blocktopmenu",
   "license": "AFL - Academic Free License (AFL 3.0)",
   "authors": [
@@ -10,7 +10,7 @@
     }
   ],
   "require": {
-    "php": ">=5.2"
+    "php": ">=5.3.2"
   },
   "config": {
     "preferred-install": "dist"
