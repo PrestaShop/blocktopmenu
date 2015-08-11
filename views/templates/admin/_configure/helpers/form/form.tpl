@@ -39,7 +39,7 @@ $("#items").closest('form').on('submit', function(e) {
 	$("#items option").prop('selected', true);
 });
 $("#addItem").click(add);
-$("#availableItems").dblclick(add);
+$("#availableItems option").dblclick(add);
 $("#removeItem").click(remove);
 $("#items").dblclick(remove);
 function add()
