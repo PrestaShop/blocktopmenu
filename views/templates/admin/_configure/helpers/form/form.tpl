@@ -39,7 +39,7 @@ $("#items").closest('form').on('submit', function(e) {
 	$("#items option").prop('selected', true);
 });
 $("#addItem").click(add);
-$("#availableItems option").dblclick(add);
+$("#availableItems option:not([disabled])").dblclick(add);
 $("#removeItem").click(remove);
 $("#items").dblclick(remove);
 function add()
@@ -55,6 +55,9 @@ function add()
 				return;
 			text = '{l s="Product ID #" mod='blocktopmenu' js=1}'+val;
 			val = "PRD"+val;
+		}
+		if($("#items option[value="+val+"]").length != 0){
+			return false;
 		}
 		$("#items").append('<option value="'+val+'" selected="selected">'+text+'</option>');
 	});
