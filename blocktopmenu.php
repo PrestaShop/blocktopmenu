@@ -590,7 +590,7 @@ class Blocktopmenu extends Module
         return $html;
     }
 
-    protected function generateCategoriesMenu($categories, $is_children = 0)
+    public function generateCategoriesMenu($categories, $is_children = 0)
     {
         $html = '';
 
