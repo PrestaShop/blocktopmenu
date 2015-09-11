@@ -24,9 +24,11 @@
 *  International Registered Trademark & Property of PrestaShop SA
 */
 
+use PrestaShop\PrestaShop\Core\Business\Module\WidgetInterface;
+
 require(dirname(__FILE__).'/menutoplinks.class.php');
 
-class Blocktopmenu extends Module
+class Blocktopmenu extends Module implements WidgetInterface
 {
     protected $_menu = '';
     protected $_html = '';
@@ -52,7 +54,7 @@ class Blocktopmenu extends Module
     {
         $this->name = 'blocktopmenu';
         $this->tab = 'front_office_features';
-        $this->version = '2.2.3';
+        $this->version = '4.0.0';
         $this->author = 'PrestaShop';
 
         $this->bootstrap = true;
@@ -60,14 +62,14 @@ class Blocktopmenu extends Module
 
         $this->displayName = $this->l('Top horizontal menu');
         $this->description = $this->l('Adds a new horizontal menu to the top of your e-commerce website.');
-        $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
+        $this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
+
+        $this->clearMenuCache();
     }
 
     public function install($delete_params = true)
     {
         if (!parent::install() ||
-            !$this->registerHook('header') ||
-            !$this->registerHook('displayTop') ||
             !$this->registerHook('actionObjectCategoryUpdateAfter') ||
             !$this->registerHook('actionObjectCategoryDeleteAfter') ||
             !$this->registerHook('actionObjectCategoryAddAfter') ||
@@ -461,189 +463,16 @@ class Blocktopmenu extends Module
         return $html.'</select>';
     }
 
-    protected function makeMenu()
+    protected function getCMSMenuItems($id, $id_lang)
     {
-        $menu_items = $this->getMenuItems();
-        $id_lang = (int)$this->context->language->id;
-        $id_shop = (int)Shop::getContextShopID();
+        $nodes = [];
 
-        foreach ($menu_items as $item) {
-            if (!$item) {
-                continue;
-            }
+        $categories = $this->getCMSCategories(false, (int)$id, (int)$id_lang);
+        ddd($categories);
 
-            preg_match($this->pattern, $item, $value);
-            $id = (int)substr($item, strlen($value[1]), strlen($item));
+        return $nodes;
 
-            switch (substr($item, 0, strlen($value[1]))) {
-                case 'CAT':
-                    $this->_menu .= $this->generateCategoriesMenu(Category::getNestedCategories($id, $id_lang, false, $this->user_groups));
-                    break;
-
-                case 'PRD':
-                    $selected = ($this->page_name == 'product' && (Tools::getValue('id_product') == $id)) ? ' class="sfHover"' : '';
-                    $product = new Product((int)$id, true, (int)$id_lang);
-                    if (!is_null($product->id)) {
-                        $this->_menu .= '<li'.$selected.'><a href="'.Tools::HtmlEntitiesUTF8($product->getLink()).'" title="'.$product->name.'">'.$product->name.'</a></li>'.PHP_EOL;
-                    }
-                    break;
-
-                case 'CMS':
-                    $selected = ($this->page_name == 'cms' && (Tools::getValue('id_cms') == $id)) ? ' class="sfHover"' : '';
-                    $cms = CMS::getLinks((int)$id_lang, array($id));
-                    if (count($cms)) {
-                        $this->_menu .= '<li'.$selected.'><a href="'.Tools::HtmlEntitiesUTF8($cms[0]['link']).'" title="'.Tools::safeOutput($cms[0]['meta_title']).'">'.Tools::safeOutput($cms[0]['meta_title']).'</a></li>'.PHP_EOL;
-                    }
-                    break;
-
-                case 'CMS_CAT':
-                    $category = new CMSCategory((int)$id, (int)$id_lang);
-                    if (count($category)) {
-                        $this->_menu .= '<li><a href="'.Tools::HtmlEntitiesUTF8($category->getLink()).'" title="'.$category->name.'">'.$category->name.'</a>';
-                        $this->getCMSMenuItems($category->id);
-                        $this->_menu .= '</li>'.PHP_EOL;
-                    }
-                    break;
-
-                // Case to handle the option to show all Manufacturers
-                case 'ALLMAN':
-                    $link = new Link;
-                    $this->_menu .= '<li><a href="'.$link->getPageLink('manufacturer').'" title="'.$this->l('All manufacturers').'">'.$this->l('All manufacturers').'</a><ul>'.PHP_EOL;
-                    $manufacturers = Manufacturer::getManufacturers();
-                    foreach ($manufacturers as $key => $manufacturer) {
-                        $this->_menu .= '<li><a href="'.$link->getManufacturerLink((int)$manufacturer['id_manufacturer'], $manufacturer['link_rewrite']).'" title="'.Tools::safeOutput($manufacturer['name']).'">'.Tools::safeOutput($manufacturer['name']).'</a></li>'.PHP_EOL;
-                    }
-                    $this->_menu .= '</ul>';
-                    break;
-
-                case 'MAN':
-                    $selected = ($this->page_name == 'manufacturer' && (Tools::getValue('id_manufacturer') == $id)) ? ' class="sfHover"' : '';
-                    $manufacturer = new Manufacturer((int)$id, (int)$id_lang);
-                    if (!is_null($manufacturer->id)) {
-                        if (intval(Configuration::get('PS_REWRITING_SETTINGS'))) {
-                            $manufacturer->link_rewrite = Tools::link_rewrite($manufacturer->name);
-                        } else {
-                            $manufacturer->link_rewrite = 0;
-                        }
-                        $link = new Link;
-                        $this->_menu .= '<li'.$selected.'><a href="'.Tools::HtmlEntitiesUTF8($link->getManufacturerLink((int)$id, $manufacturer->link_rewrite)).'" title="'.Tools::safeOutput($manufacturer->name).'">'.Tools::safeOutput($manufacturer->name).'</a></li>'.PHP_EOL;
-                    }
-                    break;
-
-                // Case to handle the option to show all Suppliers
-                case 'ALLSUP':
-                    $link = new Link;
-                    $this->_menu .= '<li><a href="'.$link->getPageLink('supplier').'" title="'.$this->l('All suppliers').'">'.$this->l('All suppliers').'</a><ul>'.PHP_EOL;
-                    $suppliers = Supplier::getSuppliers();
-                    foreach ($suppliers as $key => $supplier) {
-                        $this->_menu .= '<li><a href="'.$link->getSupplierLink((int)$supplier['id_supplier'], $supplier['link_rewrite']).'" title="'.Tools::safeOutput($supplier['name']).'">'.Tools::safeOutput($supplier['name']).'</a></li>'.PHP_EOL;
-                    }
-                    $this->_menu .= '</ul>';
-                    break;
-
-                case 'SUP':
-                    $selected = ($this->page_name == 'supplier' && (Tools::getValue('id_supplier') == $id)) ? ' class="sfHover"' : '';
-                    $supplier = new Supplier((int)$id, (int)$id_lang);
-                    if (!is_null($supplier->id)) {
-                        $link = new Link;
-                        $this->_menu .= '<li'.$selected.'><a href="'.Tools::HtmlEntitiesUTF8($link->getSupplierLink((int)$id, $supplier->link_rewrite)).'" title="'.$supplier->name.'">'.$supplier->name.'</a></li>'.PHP_EOL;
-                    }
-                    break;
-
-                case 'SHOP':
-                    $selected = ($this->page_name == 'index' && ($this->context->shop->id == $id)) ? ' class="sfHover"' : '';
-                    $shop = new Shop((int)$id);
-                    if (Validate::isLoadedObject($shop)) {
-                        $link = new Link;
-                        $this->_menu .= '<li'.$selected.'><a href="'.Tools::HtmlEntitiesUTF8($shop->getBaseURL()).'" title="'.$shop->name.'">'.$shop->name.'</a></li>'.PHP_EOL;
-                    }
-                    break;
-                case 'LNK':
-                    $link = MenuTopLinks::get((int)$id, (int)$id_lang, (int)$id_shop);
-                    if (count($link)) {
-                        if (!isset($link[0]['label']) || ($link[0]['label'] == '')) {
-                            $default_language = Configuration::get('PS_LANG_DEFAULT');
-                            $link = MenuTopLinks::get($link[0]['id_linksmenutop'], $default_language, (int)Shop::getContextShopID());
-                        }
-                        $this->_menu .= '<li><a href="'.Tools::HtmlEntitiesUTF8($link[0]['link']).'"'.(($link[0]['new_window']) ? ' onclick="return !window.open(this.href);"': '').' title="'.Tools::safeOutput($link[0]['label']).'">'.Tools::safeOutput($link[0]['label']).'</a></li>'.PHP_EOL;
-                    }
-                    break;
-            }
-        }
-    }
-
-    protected function generateCategoriesOption($categories, $items_to_skip = null)
-    {
-        $html = '';
-
-        foreach ($categories as $key => $category) {
-            if (isset($items_to_skip) /*&& !in_array('CAT'.(int)$category['id_category'], $items_to_skip)*/) {
-                $shop = (object) Shop::getShop((int)$category['id_shop']);
-                $html .= '<option value="CAT'.(int)$category['id_category'].'">'
-                    .str_repeat('&nbsp;', $this->spacer_size * (int)$category['level_depth']).$category['name'].' ('.$shop->name.')</option>';
-            }
-
-            if (isset($category['children']) && !empty($category['children'])) {
-                $html .= $this->generateCategoriesOption($category['children'], $items_to_skip);
-            }
-        }
-        return $html;
-    }
-
-    protected function generateCategoriesMenu($categories, $is_children = 0)
-    {
-        $html = '';
-
-        foreach ($categories as $key => $category) {
-            if ($category['level_depth'] > 1) {
-                $cat = new Category($category['id_category']);
-                $link = Tools::HtmlEntitiesUTF8($cat->getLink());
-            } else {
-                $link = $this->context->link->getPageLink('index');
-            }
-
-            /* Whenever a category is not active we shouldnt display it to customer */
-            if ((bool)$category['active'] === false) {
-                continue;
-            }
-
-            $html .= '<li'.(($this->page_name == 'category'
-                && (int)Tools::getValue('id_category') == (int)$category['id_category']) ? ' class="sfHoverForce"' : '').'>';
-            $html .= '<a href="'.$link.'" title="'.$category['name'].'">'.$category['name'].'</a>';
-
-            if (isset($category['children']) && !empty($category['children'])) {
-                $html .= '<ul>';
-                $html .= $this->generateCategoriesMenu($category['children'], 1);
-
-                if ((int)$category['level_depth'] > 1 && !$is_children) {
-                    $files = scandir(_PS_CAT_IMG_DIR_);
-
-                    if (count(preg_grep('/^'.$category['id_category'].'-([0-9])?_thumb.jpg/i', $files)) > 0) {
-                        $html .= '<li class="category-thumbnail">';
-
-                        foreach ($files as $file) {
-                            if (preg_match('/^'.$category['id_category'].'-([0-9])?_thumb.jpg/i', $file) === 1) {
-                                $html .= '<div><img src="'.$this->context->link->getMediaLink(_THEME_CAT_DIR_.$file)
-                                .'" alt="'.Tools::SafeOutput($category['name']).'" title="'
-                                .Tools::SafeOutput($category['name']).'" class="imgm" /></div>';
-                            }
-                        }
-
-                        $html .= '</li>';
-                    }
-                }
-
-                $html .= '</ul>';
-            }
-
-            $html .= '</li>';
-        }
-
-        return $html;
-    }
-
-    protected function getCMSMenuItems($parent, $depth = 1, $id_lang = false)
-    {
+        /*
         $id_lang = $id_lang ? (int)$id_lang : (int)Context::getContext()->language->id;
 
         if ($depth > 3) {
@@ -676,7 +505,290 @@ class Blocktopmenu extends Module
             }
 
             $this->_menu .= '</ul>';
+        }*/
+    }
+
+    protected function generateCMSCategoriesMenu($id_cms_category, $id_lang)
+    {
+        $selected = false; // FIXME
+        $category = new CMSCategory($id_cms_category, $id_lang);
+
+        $rawSubCategories = $this->getCMSCategories(false, $id_cms_category, $id_lang);
+        $rawSubPages = $this->getCMSPages($id_cms_category);
+
+        $subCategories = array_map(function ($category) use ($id_lang) {
+            return $this->generateCMSCategoriesMenu($category['id_cms_category'], $id_lang);
+        }, $rawSubCategories);
+
+        $subPages = array_map(function ($page) use ($id_lang) {
+            $selected = false; // FIXME
+            return [
+                'type' => 'cms-page',
+                'label' => $page['meta_title'],
+                'url' => $this->context->link->getCMSLink(
+                    new CMS($page['id_cms'], $id_lang),
+                    null, null,
+                    $id_lang
+                ),
+                'current' => $selected
+            ];
+        }, $rawSubPages);
+
+        $node = [
+            'type' => 'cms-category',
+            'label' => $category->name,
+            'url' => $category->getLink(),
+            'current' => $selected,
+            'children' => array_merge($subCategories, $subPages)
+        ];
+
+        return $node;
+    }
+
+    protected function makeMenu()
+    {
+        $root_node = [
+            'label' => null,
+            'type'  => 'root',
+            'children' => []
+        ];
+
+        $menu_items = $this->getMenuItems();
+        $id_lang = (int)$this->context->language->id;
+        $id_shop = (int)Shop::getContextShopID();
+
+        foreach ($menu_items as $item) {
+            if (!$item) {
+                continue;
+            }
+
+            preg_match($this->pattern, $item, $value);
+            $id = (int)substr($item, strlen($value[1]), strlen($item));
+
+            switch (substr($item, 0, strlen($value[1]))) {
+                case 'CAT':
+                    $categories = $this->generateCategoriesMenu(
+                        Category::getNestedCategories($id, $id_lang, false, $this->user_groups)
+                    );
+                    $root_node['children'] = array_merge($root_node['children'], $categories);
+                    break;
+
+                case 'PRD':
+                    $selected = ($this->page_name == 'product' && (Tools::getValue('id_product') == $id)) ? ' class="sfHover"' : '';
+                    $product = new Product((int)$id, true, (int)$id_lang);
+                    if ($product->id) {
+                        $root_node['children'][] = [
+                            'type' => 'product',
+                            'label' => $product->name,
+                            'url' => $product->getLink(),
+                            'current' => $selected
+                        ];
+                    }
+                    break;
+
+                case 'CMS':
+                    $selected = ($this->page_name == 'cms' && (Tools::getValue('id_cms') == $id)) ? ' class="sfHover"' : '';
+                    $cms = CMS::getLinks((int)$id_lang, array($id));
+                    if (count($cms)) {
+                        $root_node['children'][] = [
+                            'type' => 'cms-page',
+                            'label' => $cms[0]['meta_title'],
+                            'url' => $cms[0]['link'],
+                            'current' => $selected
+                        ];
+                    }
+                    break;
+
+                case 'CMS_CAT':
+                    $root_node['children'][] = $this->generateCMSCategoriesMenu((int)$id, (int)$id_lang);
+                    break;
+
+                // Case to handle the option to show all Manufacturers
+                case 'ALLMAN':
+                    $current = false; // FIXME
+
+                    $children = array_map(function ($manufacturer) use ($id_lang) {
+                        $current = false; // FIXME
+                        return [
+                            'type' => 'manufacturer',
+                            'label' => $manufacturer['name'],
+                            'url' => $this->context->link->getManufacturerLink(
+                                new Manufacturer($manufacturer['id_manufacturer'], $id_lang),
+                                null,
+                                $id_lang
+                            ),
+                            'current' => false
+                        ];
+                    }, Manufacturer::getManufacturers());
+
+                    $root_node['children'][] = [
+                        'type' => 'manufacturers',
+                        'label' => $this->l('All manufacturers'),
+                        'url' => $this->context->link->getPageLink('manufacturer'),
+                        'current' => $current,
+                        'children' => $children
+                    ];
+                    break;
+
+                case 'MAN':
+                    $current = ($this->page_name == 'manufacturer' && (Tools::getValue('id_manufacturer') == $id));
+                    $manufacturer = new Manufacturer($id, $id_lang);
+                    if ($manufacturer->id) {
+                        $root_node['children'][] = [
+                            'type' => 'manufacturer',
+                            'label' => $manufacturer->name,
+                            'url' => $this->context->link->getManufacturerLink(
+                                $manufacturer,
+                                null,
+                                $id_lang
+                            ),
+                            'current' => $current
+                        ];
+                    }
+                    break;
+
+                // Case to handle the option to show all Suppliers
+                case 'ALLSUP':
+                    $current = false; // FIXME
+
+                    $children = array_map(function ($supplier) use ($id_lang) {
+                        $current = false; // FIXME
+                        return [
+                            'type' => 'supplier',
+                            'label' => $supplier['name'],
+                            'url' => $this->context->link->getManufacturerLink(
+                                new Manufacturer($supplier['id_manufacturer'], $id_lang),
+                                null,
+                                $id_lang
+                            ),
+                            'current' => false
+                        ];
+                    }, Supplier::getSuppliers());
+
+                    $root_node['children'][] = [
+                        'type' => 'suppliers',
+                        'label' => $this->l('All suppliers'),
+                        'url' => $this->context->link->getPageLink('supplier'),
+                        'current' => $current,
+                        'children' => $children
+                    ];
+                    break;
+
+                case 'SUP':
+                    $current = ($this->page_name == 'supplier' && (Tools::getValue('id_supplier') == $id));
+                    $supplier = new Supplier($id, $id_lang);
+                    if ($supplier->id) {
+                        $root_node['children'][] = [
+                            'type' => 'supplier',
+                            'label' => $supplier->name,
+                            'url' => $this->context->link->getSupplierLink(
+                                $supplier,
+                                null,
+                                $id_lang
+                            ),
+                            'current' => $current
+                        ];
+                    }
+                    break;
+
+                case 'SHOP':
+                    $current = ($this->page_name == 'index' && ($this->context->shop->id == $id));
+                    $shop = new Shop((int)$id);
+                    if (Validate::isLoadedObject($shop)) {
+                        $root_node['children'][] = [
+                            'type' => 'shop',
+                            'label' => $shop->name,
+                            'url' => $shop->getBaseURL(),
+                            'current' => $current
+                        ];
+                    }
+                    break;
+                case 'LNK':
+                    $link = MenuTopLinks::get($id, $id_lang, $id_shop);
+                    if (!empty($link)) {
+                        if (!isset($link[0]['label']) || ($link[0]['label'] == '')) {
+                            $default_language = Configuration::get('PS_LANG_DEFAULT');
+                            $link = MenuTopLinks::get($link[0]['id_linksmenutop'], $default_language, (int)Shop::getContextShopID());
+                        }
+                        $root_node['children'][] = [
+                            'type' => 'link',
+                            'label' => $link[0]['label'],
+                            'url' => $link[0]['link'],
+                            'current' => false,
+                            'open_in_new_window' => $link[0]['new_window']
+                        ];
+                    }
+                    break;
+            }
         }
+
+        return $root_node;
+    }
+
+    protected function generateCategoriesOption($categories, $items_to_skip = null)
+    {
+        $html = '';
+
+        foreach ($categories as $key => $category) {
+            if (isset($items_to_skip) /*&& !in_array('CAT'.(int)$category['id_category'], $items_to_skip)*/) {
+                $shop = (object) Shop::getShop((int)$category['id_shop']);
+                $html .= '<option value="CAT'.(int)$category['id_category'].'">'
+                    .str_repeat('&nbsp;', $this->spacer_size * (int)$category['level_depth']).$category['name'].' ('.$shop->name.')</option>';
+            }
+
+            if (isset($category['children']) && !empty($category['children'])) {
+                $html .= $this->generateCategoriesOption($category['children'], $items_to_skip);
+            }
+        }
+        return $html;
+    }
+
+    protected function generateCategoriesMenu($categories, $is_children = 0)
+    {
+        $nodes = [];
+
+        foreach ($categories as $key => $category) {
+            $node = [];
+
+            if ($category['level_depth'] > 1) {
+                $cat = new Category($category['id_category']);
+                $link = Tools::HtmlEntitiesUTF8($cat->getLink());
+            } else {
+                $link = $this->context->link->getPageLink('index');
+            }
+
+            $node['url'] = $link;
+            $node['type'] = 'category';
+
+            /* Whenever a category is not active we shouldnt display it to customer */
+            if ((bool)$category['active'] === false) {
+                continue;
+            }
+
+            $current = $this->page_name == 'category' && (int)Tools::getValue('id_category') == (int)$category['id_category'];
+            $node['current'] = $current;
+            $node['label']   = $category['name'];
+            $node['image_urls']  = [];
+
+            if (isset($category['children']) && !empty($category['children'])) {
+                $node['children'] = $this->generateCategoriesMenu($category['children'], 1);
+
+                $files = scandir(_PS_CAT_IMG_DIR_);
+
+                if (count(preg_grep('/^'.$category['id_category'].'-([0-9])?_thumb.jpg/i', $files)) > 0) {
+                    foreach ($files as $file) {
+                        if (preg_match('/^'.$category['id_category'].'-([0-9])?_thumb.jpg/i', $file) === 1) {
+                            $image_url = $this->context->link->getMediaLink(_THEME_CAT_DIR_.$file);
+                            $node['image_urls'][] = $image_url;
+                        }
+                    }
+                }
+            }
+
+            $nodes[] = $node;
+        }
+
+        return $nodes;
     }
 
     protected function getCMSOptions($parent = 0, $depth = 1, $id_lang = false, $items_to_skip = null, $id_shop = false)
@@ -718,33 +830,6 @@ class Blocktopmenu extends Module
         $this->context->controller->addJS($this->_path.'js/blocktopmenu.js');
         $this->context->controller->addCSS($this->_path.'css/blocktopmenu.css');
         $this->context->controller->addCSS($this->_path.'css/superfish-modified.css');
-    }
-
-    public function hookDisplayTop($param)
-    {
-        $this->user_groups = ($this->context->customer->isLogged() ?
-            $this->context->customer->getGroups() : array(Configuration::get('PS_UNIDENTIFIED_GROUP')));
-        $this->page_name = Dispatcher::getInstance()->getController();
-        if (!$this->isCached('blocktopmenu.tpl', $this->getCacheId())) {
-            if (Tools::isEmpty($this->_menu)) {
-                $this->makeMenu();
-            }
-
-            $shop_id = (int)$this->context->shop->id;
-            $shop_group_id = Shop::getGroupFromShop($shop_id);
-
-            $this->smarty->assign('MENU_SEARCH', Configuration::get('MOD_BLOCKTOPMENU_SEARCH', null, $shop_group_id, $shop_id));
-            $this->smarty->assign('MENU', $this->_menu);
-            $this->smarty->assign('this_path', $this->_path);
-        }
-
-        $html = $this->display(__FILE__, 'blocktopmenu.tpl', $this->getCacheId());
-        return $html;
-    }
-
-    public function hookDisplayNav($params)
-    {
-        return $this->hookDisplayTop($params);
     }
 
     protected function getCMSCategories($recursive = false, $parent = 1, $id_lang = false, $id_shop = false)
@@ -1357,5 +1442,33 @@ class Blocktopmenu extends Module
         $helper->currentIndex = AdminController::$currentIndex.'&configure='.$this->name;
 
         return $helper->generateList($links, $fields_list);
+    }
+
+    public function getWidgetVariables($hookName, array $configuration)
+    {
+        ddd($this->makeMenu());
+    }
+
+    public function renderWidget($hookName, array $configuration)
+    {
+        $variables = $this->getWidgetVariables($hookName, $configuration);
+        /*$this->user_groups = ($this->context->customer->isLogged() ?
+            $this->context->customer->getGroups() : array(Configuration::get('PS_UNIDENTIFIED_GROUP')));
+        $this->page_name = Dispatcher::getInstance()->getController();
+        if (!$this->isCached('blocktopmenu.tpl', $this->getCacheId())) {
+            if (Tools::isEmpty($this->_menu)) {
+                $this->makeMenu();
+            }
+
+            $shop_id = (int)$this->context->shop->id;
+            $shop_group_id = Shop::getGroupFromShop($shop_id);
+
+            $this->smarty->assign('MENU_SEARCH', Configuration::get('MOD_BLOCKTOPMENU_SEARCH', null, $shop_group_id, $shop_id));
+            $this->smarty->assign('MENU', $this->_menu);
+            $this->smarty->assign('this_path', $this->_path);
+        }
+
+        $html = $this->display(__FILE__, 'blocktopmenu.tpl', $this->getCacheId());
+        return $html;*/
     }
 }
