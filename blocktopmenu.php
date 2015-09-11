@@ -688,7 +688,7 @@ class Blocktopmenu extends Module implements WidgetInterface
         $nodes = [];
 
         foreach ($categories as $key => $category) {
-            $node = [];
+            $node = $this->makeNode([]);
 
             if ($category['level_depth'] > 1) {
                 $cat = new Category($category['id_category']);
