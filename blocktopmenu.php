@@ -90,8 +90,6 @@ class Blocktopmenu extends Module implements WidgetInterface
             return false;
         }
 
-        $this->clearMenuCache();
-
         if ($delete_params) {
             if (!$this->installDb() || !Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_ITEMS', 'CAT3,CAT26')) {
                 return false;
@@ -929,7 +927,7 @@ class Blocktopmenu extends Module implements WidgetInterface
 
     protected function clearMenuCache()
     {
-        $this->_clearCache('blocktopmenu.tpl');
+
     }
 
     public function hookActionShopDataDuplication($params)
@@ -1334,6 +1332,12 @@ class Blocktopmenu extends Module implements WidgetInterface
 
     public function getWidgetVariables($hookName, array $configuration)
     {
+        // TODO: caching
+        /*
+        $id_lang = (int)$this->context->language->id;
+        $id_shop = (int)Shop::getContextShopID();
+        */
+
         return $this->makeMenu();
     }
 
