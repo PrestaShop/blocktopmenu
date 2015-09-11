@@ -93,7 +93,7 @@ class Blocktopmenu extends Module implements WidgetInterface
         $this->clearMenuCache();
 
         if ($delete_params) {
-            if (!$this->installDb() || !Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_ITEMS', 'CAT3,CAT26') || !Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_SEARCH', '1')) {
+            if (!$this->installDb() || !Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_ITEMS', 'CAT3,CAT26')) {
                 return false;
             }
         }
@@ -130,7 +130,7 @@ class Blocktopmenu extends Module implements WidgetInterface
         $this->clearMenuCache();
 
         if ($delete_params) {
-            if (!$this->uninstallDB() || !Configuration::deleteByName('MOD_BLOCKTOPMENU_ITEMS') || !Configuration::deleteByName('MOD_BLOCKTOPMENU_SEARCH')) {
+            if (!$this->uninstallDB() || !Configuration::deleteByName('MOD_BLOCKTOPMENU_ITEMS')) {
                 return false;
             }
         }
@@ -189,8 +189,6 @@ class Blocktopmenu extends Module implements WidgetInterface
                         $updated = Configuration::updateValue('MOD_BLOCKTOPMENU_ITEMS', '', false, (int)$shop_group_id, (int)$shop_id);
                     }
                 }
-
-                $updated &= Configuration::updateValue('MOD_BLOCKTOPMENU_SEARCH', (bool)Tools::getValue('search'), false, (int)$shop_group_id, (int)$shop_id);
 
                 if (!$updated) {
                     $shop = new Shop($shop_id);
@@ -463,54 +461,22 @@ class Blocktopmenu extends Module implements WidgetInterface
         return $html.'</select>';
     }
 
-    protected function getCMSMenuItems($id, $id_lang)
+    protected function makeNode(array $fields)
     {
-        $nodes = [];
+        $defaults = [
+            'type' => '',
+            'label' => '',
+            'url' => '',
+            'children' => [],
+            'open_in_new_window' => false,
+            'image_urls' => []
+        ];
 
-        $categories = $this->getCMSCategories(false, (int)$id, (int)$id_lang);
-        ddd($categories);
-
-        return $nodes;
-
-        /*
-        $id_lang = $id_lang ? (int)$id_lang : (int)Context::getContext()->language->id;
-
-        if ($depth > 3) {
-            return;
-        }
-
-        $categories = $this->getCMSCategories(false, (int)$parent, (int)$id_lang);
-        $pages = $this->getCMSPages((int)$parent);
-
-        if (count($categories) || count($pages)) {
-            $this->_menu .= '<ul>';
-
-            foreach ($categories as $category) {
-                $cat = new CMSCategory((int)$category['id_cms_category'], (int)$id_lang);
-
-                $this->_menu .= '<li>';
-                $this->_menu .= '<a href="'.Tools::HtmlEntitiesUTF8($cat->getLink()).'">'.$category['name'].'</a>';
-                $this->getCMSMenuItems($category['id_cms_category'], (int)$depth + 1);
-                $this->_menu .= '</li>';
-            }
-
-            foreach ($pages as $page) {
-                $cms = new CMS($page['id_cms'], (int)$id_lang);
-                $links = $cms->getLinks((int)$id_lang, array((int)$cms->id));
-
-                $selected = ($this->page_name == 'cms' && ((int)Tools::getValue('id_cms') == $page['id_cms'])) ? ' class="sfHoverForce"' : '';
-                $this->_menu .= '<li '.$selected.'>';
-                $this->_menu .= '<a href="'.$links[0]['link'].'">'.$cms->meta_title.'</a>';
-                $this->_menu .= '</li>';
-            }
-
-            $this->_menu .= '</ul>';
-        }*/
+        return array_merge($defaults, $fields);
     }
 
     protected function generateCMSCategoriesMenu($id_cms_category, $id_lang)
     {
-        $selected = false; // FIXME
         $category = new CMSCategory($id_cms_category, $id_lang);
 
         $rawSubCategories = $this->getCMSCategories(false, $id_cms_category, $id_lang);
@@ -521,8 +487,7 @@ class Blocktopmenu extends Module implements WidgetInterface
         }, $rawSubCategories);
 
         $subPages = array_map(function ($page) use ($id_lang) {
-            $selected = false; // FIXME
-            return [
+            return $this->makeNode([
                 'type' => 'cms-page',
                 'label' => $page['meta_title'],
                 'url' => $this->context->link->getCMSLink(
@@ -530,28 +495,26 @@ class Blocktopmenu extends Module implements WidgetInterface
                     null, null,
                     $id_lang
                 ),
-                'current' => $selected
-            ];
+            ]);
         }, $rawSubPages);
 
-        $node = [
+        $node = $this->makeNode([
             'type' => 'cms-category',
             'label' => $category->name,
             'url' => $category->getLink(),
-            'current' => $selected,
             'children' => array_merge($subCategories, $subPages)
-        ];
+        ]);
 
         return $node;
     }
 
     protected function makeMenu()
     {
-        $root_node = [
+        $root_node = $this->makeNode([
             'label' => null,
             'type'  => 'root',
             'children' => []
-        ];
+        ]);
 
         $menu_items = $this->getMenuItems();
         $id_lang = (int)$this->context->language->id;
@@ -574,28 +537,24 @@ class Blocktopmenu extends Module implements WidgetInterface
                     break;
 
                 case 'PRD':
-                    $selected = ($this->page_name == 'product' && (Tools::getValue('id_product') == $id)) ? ' class="sfHover"' : '';
                     $product = new Product((int)$id, true, (int)$id_lang);
                     if ($product->id) {
-                        $root_node['children'][] = [
+                        $root_node['children'][] = $this->makeNode([
                             'type' => 'product',
                             'label' => $product->name,
                             'url' => $product->getLink(),
-                            'current' => $selected
-                        ];
+                        ]);
                     }
                     break;
 
                 case 'CMS':
-                    $selected = ($this->page_name == 'cms' && (Tools::getValue('id_cms') == $id)) ? ' class="sfHover"' : '';
                     $cms = CMS::getLinks((int)$id_lang, array($id));
                     if (count($cms)) {
-                        $root_node['children'][] = [
+                        $root_node['children'][] = $this->makeNode([
                             'type' => 'cms-page',
                             'label' => $cms[0]['meta_title'],
-                            'url' => $cms[0]['link'],
-                            'current' => $selected
-                        ];
+                            'url' => $cms[0]['link']
+                        ]);
                     }
                     break;
 
@@ -605,102 +564,86 @@ class Blocktopmenu extends Module implements WidgetInterface
 
                 // Case to handle the option to show all Manufacturers
                 case 'ALLMAN':
-                    $current = false; // FIXME
-
                     $children = array_map(function ($manufacturer) use ($id_lang) {
-                        $current = false; // FIXME
-                        return [
+                        return $this->makeNode([
                             'type' => 'manufacturer',
                             'label' => $manufacturer['name'],
                             'url' => $this->context->link->getManufacturerLink(
                                 new Manufacturer($manufacturer['id_manufacturer'], $id_lang),
                                 null,
                                 $id_lang
-                            ),
-                            'current' => false
-                        ];
+                            )
+                        ]);
                     }, Manufacturer::getManufacturers());
 
-                    $root_node['children'][] = [
+                    $root_node['children'][] = $this->makeNode([
                         'type' => 'manufacturers',
                         'label' => $this->l('All manufacturers'),
                         'url' => $this->context->link->getPageLink('manufacturer'),
-                        'current' => $current,
                         'children' => $children
-                    ];
+                    ]);
                     break;
 
                 case 'MAN':
-                    $current = ($this->page_name == 'manufacturer' && (Tools::getValue('id_manufacturer') == $id));
                     $manufacturer = new Manufacturer($id, $id_lang);
                     if ($manufacturer->id) {
-                        $root_node['children'][] = [
+                        $root_node['children'][] = $this->makeNode([
                             'type' => 'manufacturer',
                             'label' => $manufacturer->name,
                             'url' => $this->context->link->getManufacturerLink(
                                 $manufacturer,
                                 null,
                                 $id_lang
-                            ),
-                            'current' => $current
-                        ];
+                            )
+                        ]);
                     }
                     break;
 
                 // Case to handle the option to show all Suppliers
                 case 'ALLSUP':
-                    $current = false; // FIXME
-
                     $children = array_map(function ($supplier) use ($id_lang) {
-                        $current = false; // FIXME
-                        return [
+                        return $this->makeNode([
                             'type' => 'supplier',
                             'label' => $supplier['name'],
                             'url' => $this->context->link->getManufacturerLink(
-                                new Manufacturer($supplier['id_manufacturer'], $id_lang),
+                                new Supplier($supplier['id_supplier'], $id_lang),
                                 null,
                                 $id_lang
-                            ),
-                            'current' => false
-                        ];
+                            )
+                        ]);
                     }, Supplier::getSuppliers());
 
-                    $root_node['children'][] = [
+                    $root_node['children'][] = $this->makeNode([
                         'type' => 'suppliers',
                         'label' => $this->l('All suppliers'),
                         'url' => $this->context->link->getPageLink('supplier'),
-                        'current' => $current,
                         'children' => $children
-                    ];
+                    ]);
                     break;
 
                 case 'SUP':
-                    $current = ($this->page_name == 'supplier' && (Tools::getValue('id_supplier') == $id));
                     $supplier = new Supplier($id, $id_lang);
                     if ($supplier->id) {
-                        $root_node['children'][] = [
+                        $root_node['children'][] = $this->makeNode([
                             'type' => 'supplier',
                             'label' => $supplier->name,
                             'url' => $this->context->link->getSupplierLink(
                                 $supplier,
                                 null,
                                 $id_lang
-                            ),
-                            'current' => $current
-                        ];
+                            )
+                        ]);
                     }
                     break;
 
                 case 'SHOP':
-                    $current = ($this->page_name == 'index' && ($this->context->shop->id == $id));
                     $shop = new Shop((int)$id);
                     if (Validate::isLoadedObject($shop)) {
-                        $root_node['children'][] = [
+                        $root_node['children'][] = $this->makeNode([
                             'type' => 'shop',
                             'label' => $shop->name,
                             'url' => $shop->getBaseURL(),
-                            'current' => $current
-                        ];
+                        ]);
                     }
                     break;
                 case 'LNK':
@@ -710,13 +653,12 @@ class Blocktopmenu extends Module implements WidgetInterface
                             $default_language = Configuration::get('PS_LANG_DEFAULT');
                             $link = MenuTopLinks::get($link[0]['id_linksmenutop'], $default_language, (int)Shop::getContextShopID());
                         }
-                        $root_node['children'][] = [
+                        $root_node['children'][] = $this->makeNode([
                             'type' => 'link',
                             'label' => $link[0]['label'],
                             'url' => $link[0]['link'],
-                            'current' => false,
                             'open_in_new_window' => $link[0]['new_window']
-                        ];
+                        ]);
                     }
                     break;
             }
@@ -1037,24 +979,6 @@ class Blocktopmenu extends Module implements WidgetInterface
                             'label' => '',
                             'name' => 'link',
                             'lang' => true,
-                        ),
-                        array(
-                            'type' => 'switch',
-                            'label' => $this->l('Search bar'),
-                            'name' => 'search',
-                            'is_bool' => true,
-                            'values' => array(
-                                array(
-                                    'id' => 'active_on',
-                                    'value' => 1,
-                                    'label' => $this->l('Enabled')
-                                ),
-                                array(
-                                    'id' => 'active_off',
-                                    'value' => 0,
-                                    'label' => $this->l('Disabled')
-                                )
-                            ),
                         )
                     ),
                     'submit' => array(
@@ -1072,26 +996,6 @@ class Blocktopmenu extends Module implements WidgetInterface
                     ),
                     'info' => '<div class="alert alert-warning">'.
                         $this->l('All active products combinations quantities will be changed').'</div>',
-                    'input' => array(
-                        array(
-                            'type' => 'switch',
-                            'label' => $this->l('Search bar'),
-                            'name' => 'search',
-                            'is_bool' => true,
-                            'values' => array(
-                                array(
-                                    'id' => 'active_on',
-                                    'value' => 1,
-                                    'label' => $this->l('Enabled')
-                                ),
-                                array(
-                                    'id' => 'active_off',
-                                    'value' => 0,
-                                    'label' => $this->l('Disabled')
-                                )
-                            ),
-                        )
-                    ),
                     'submit' => array(
                         'name' => 'submitBlocktopmenu',
                         'title' => $this->l('Save')
@@ -1113,7 +1017,6 @@ class Blocktopmenu extends Module implements WidgetInterface
             '&configure='.$this->name.'&tab_module='.$this->tab.'&module_name='.$this->name;
         $helper->token = Tools::getAdminTokenLite('AdminModules');
         $helper->tpl_vars = array(
-            'fields_value' => $this->getConfigFieldsValues(),
             'languages' => $this->context->controller->getLanguages(),
             'id_language' => $this->context->language->id,
             'choices' => $this->renderChoicesSelect(),
@@ -1340,21 +1243,6 @@ class Blocktopmenu extends Module implements WidgetInterface
         return Cache::retrieve($cache_id);
     }
 
-    public function getConfigFieldsValues()
-    {
-        $shops = Shop::getContextListShopID();
-        $is_search_on = true;
-
-        foreach ($shops as $shop_id) {
-            $shop_group_id = Shop::getGroupFromShop($shop_id);
-            $is_search_on &= (bool)Configuration::get('MOD_BLOCKTOPMENU_SEARCH', null, $shop_group_id, $shop_id);
-        }
-
-        return array(
-            'search' => (int)$is_search_on
-        );
-    }
-
     public function getAddLinkFieldsValues()
     {
         $links_label_edit = '';
@@ -1446,29 +1334,12 @@ class Blocktopmenu extends Module implements WidgetInterface
 
     public function getWidgetVariables($hookName, array $configuration)
     {
-        ddd($this->makeMenu());
+        return $this->makeMenu();
     }
 
     public function renderWidget($hookName, array $configuration)
     {
         $variables = $this->getWidgetVariables($hookName, $configuration);
-        /*$this->user_groups = ($this->context->customer->isLogged() ?
-            $this->context->customer->getGroups() : array(Configuration::get('PS_UNIDENTIFIED_GROUP')));
-        $this->page_name = Dispatcher::getInstance()->getController();
-        if (!$this->isCached('blocktopmenu.tpl', $this->getCacheId())) {
-            if (Tools::isEmpty($this->_menu)) {
-                $this->makeMenu();
-            }
-
-            $shop_id = (int)$this->context->shop->id;
-            $shop_group_id = Shop::getGroupFromShop($shop_id);
-
-            $this->smarty->assign('MENU_SEARCH', Configuration::get('MOD_BLOCKTOPMENU_SEARCH', null, $shop_group_id, $shop_id));
-            $this->smarty->assign('MENU', $this->_menu);
-            $this->smarty->assign('this_path', $this->_path);
-        }
-
-        $html = $this->display(__FILE__, 'blocktopmenu.tpl', $this->getCacheId());
-        return $html;*/
+        ddd($variables);
     }
 }
