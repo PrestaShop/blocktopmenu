@@ -554,7 +554,7 @@ class Blocktopmenu extends Module implements WidgetInterface
                     if (count($cms)) {
                         $root_node['children'][] = $this->makeNode([
                             'type' => 'cms-page',
-                            'type' => 'cms-page-' . $id,
+                            'page_identifier' => 'cms-page-' . $id,
                             'label' => $cms[0]['meta_title'],
                             'url' => $cms[0]['link']
                         ]);
@@ -1409,7 +1409,6 @@ class Blocktopmenu extends Module implements WidgetInterface
         }
 
         $page_identifier = $this->getCurrentPageIdentifier();
-
         // Mark the current page
         return $this->mapTree(function (array $node) use ($page_identifier) {
             $node['current'] = ($page_identifier === $node['page_identifier']);
