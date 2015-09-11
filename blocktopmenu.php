@@ -30,6 +30,8 @@ require(dirname(__FILE__).'/menutoplinks.class.php');
 
 class Blocktopmenu extends Module implements WidgetInterface
 {
+    const MENU_JSON_CACHE_KEY = 'MOD_BLOCKTOPMENU_MENU_JSON';
+
     protected $_menu = '';
     protected $_html = '';
     protected $user_groups;
@@ -63,8 +65,6 @@ class Blocktopmenu extends Module implements WidgetInterface
         $this->displayName = $this->l('Top horizontal menu');
         $this->description = $this->l('Adds a new horizontal menu to the top of your e-commerce website.');
         $this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
-
-        $this->clearMenuCache();
     }
 
     public function install($delete_params = true)
@@ -662,7 +662,18 @@ class Blocktopmenu extends Module implements WidgetInterface
             }
         }
 
-        return $root_node;
+        return $this->mapTree(function ($node, $depth) {
+            $node['depth'] = $depth;
+            return $node;
+        }, $root_node);
+    }
+
+    protected function mapTree(callable $cb, array $node, $depth = 0)
+    {
+        $node['children'] = array_map(function ($child) use ($cb, $depth) {
+            return $this->mapTree($cb, $child, $depth + 1);
+        }, $node['children']);
+        return $cb($node, $depth);
     }
 
     protected function generateCategoriesOption($categories, $items_to_skip = null)
@@ -925,9 +936,19 @@ class Blocktopmenu extends Module implements WidgetInterface
         $this->clearMenuCache();
     }
 
+    protected function getCacheDirectory()
+    {
+        return _PS_CACHE_DIR_ . DIRECTORY_SEPARATOR . 'blocktopmenu';
+    }
+
     protected function clearMenuCache()
     {
-
+        $dir = $this->getCacheDirectory();
+        foreach (@scandir($dir) as $entry) {
+            if (preg_match('/\.json$/', $entry)) {
+                unlink($dir . DIRECTORY_SEPARATOR . $entry);
+            }
+        }
     }
 
     public function hookActionShopDataDuplication($params)
@@ -1332,18 +1353,30 @@ class Blocktopmenu extends Module implements WidgetInterface
 
     public function getWidgetVariables($hookName, array $configuration)
     {
-        // TODO: caching
-        /*
-        $id_lang = (int)$this->context->language->id;
-        $id_shop = (int)Shop::getContextShopID();
-        */
+        $id_lang = $this->context->language->id;
+        $id_shop = $this->context->shop->id;
 
-        return $this->makeMenu();
+        $key = self::MENU_JSON_CACHE_KEY . '_' . $id_lang . '_' . $id_shop . '.json';
+        $cacheDir = $this->getCacheDirectory();
+        $cacheFile = $cacheDir . DIRECTORY_SEPARATOR . $key;
+
+        $variables = json_decode(@file_get_contents($cacheFile), true);
+        if (!is_array($variables) || json_last_error() !== JSON_ERROR_NONE) {
+            $variables = $this->makeMenu();
+            if (!is_dir($cacheDir)) {
+                mkdir($cacheDir);
+            }
+            file_put_contents($cacheFile, json_encode($variables));
+        }
+
+        return $variables;
     }
 
     public function renderWidget($hookName, array $configuration)
     {
-        $variables = $this->getWidgetVariables($hookName, $configuration);
-        ddd($variables);
+        $this->smarty->assign([
+            'menu' => $this->getWidgetVariables($hookName, $configuration)
+        ]);
+        return $this->display(__FILE__, 'blocktopmenu.tpl');
     }
 }
