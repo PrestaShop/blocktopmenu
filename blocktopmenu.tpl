@@ -2,7 +2,7 @@
   {if $nodes|count}
     <ul class="menu" data-depth="{$depth}">
       {foreach from=$nodes item=node}
-        <li class="{$node.type}">
+        <li class="{$node.type}{if $node.current} current{/if}">
           <a href="{$node.url}" {if $node.open_in_new_window} target="_blank" {/if}>{$node.label}</a>
           {menu nodes=$node.children depth=$node.depth}
           {if $node.image_urls|count}

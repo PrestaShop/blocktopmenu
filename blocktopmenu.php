@@ -467,7 +467,8 @@ class Blocktopmenu extends Module implements WidgetInterface
             'url' => '',
             'children' => [],
             'open_in_new_window' => false,
-            'image_urls' => []
+            'image_urls' => [],
+            'page_identifier' => null
         ];
 
         return array_merge($defaults, $fields);
@@ -487,6 +488,7 @@ class Blocktopmenu extends Module implements WidgetInterface
         $subPages = array_map(function ($page) use ($id_lang) {
             return $this->makeNode([
                 'type' => 'cms-page',
+                'page_identifier' => 'cms-page-' . $page['id_cms'],
                 'label' => $page['meta_title'],
                 'url' => $this->context->link->getCMSLink(
                     new CMS($page['id_cms'], $id_lang),
@@ -498,6 +500,7 @@ class Blocktopmenu extends Module implements WidgetInterface
 
         $node = $this->makeNode([
             'type' => 'cms-category',
+            'page_identifier' => 'cms-category-' . $id_cms_category,
             'label' => $category->name,
             'url' => $category->getLink(),
             'children' => array_merge($subCategories, $subPages)
@@ -539,6 +542,7 @@ class Blocktopmenu extends Module implements WidgetInterface
                     if ($product->id) {
                         $root_node['children'][] = $this->makeNode([
                             'type' => 'product',
+                            'page_identifier' => 'product-' . $product->id,
                             'label' => $product->name,
                             'url' => $product->getLink(),
                         ]);
@@ -550,6 +554,7 @@ class Blocktopmenu extends Module implements WidgetInterface
                     if (count($cms)) {
                         $root_node['children'][] = $this->makeNode([
                             'type' => 'cms-page',
+                            'type' => 'cms-page-' . $id,
                             'label' => $cms[0]['meta_title'],
                             'url' => $cms[0]['link']
                         ]);
@@ -565,6 +570,7 @@ class Blocktopmenu extends Module implements WidgetInterface
                     $children = array_map(function ($manufacturer) use ($id_lang) {
                         return $this->makeNode([
                             'type' => 'manufacturer',
+                            'page_identifier' => 'manufacturer-' . $manufacturer['id_manufacturer'],
                             'label' => $manufacturer['name'],
                             'url' => $this->context->link->getManufacturerLink(
                                 new Manufacturer($manufacturer['id_manufacturer'], $id_lang),
@@ -576,6 +582,7 @@ class Blocktopmenu extends Module implements WidgetInterface
 
                     $root_node['children'][] = $this->makeNode([
                         'type' => 'manufacturers',
+                        'page_identifier' => 'manufacturers',
                         'label' => $this->l('All manufacturers'),
                         'url' => $this->context->link->getPageLink('manufacturer'),
                         'children' => $children
@@ -587,6 +594,7 @@ class Blocktopmenu extends Module implements WidgetInterface
                     if ($manufacturer->id) {
                         $root_node['children'][] = $this->makeNode([
                             'type' => 'manufacturer',
+                            'page_identifier' => 'manufacturer-' . $manufacturer->id,
                             'label' => $manufacturer->name,
                             'url' => $this->context->link->getManufacturerLink(
                                 $manufacturer,
@@ -602,8 +610,9 @@ class Blocktopmenu extends Module implements WidgetInterface
                     $children = array_map(function ($supplier) use ($id_lang) {
                         return $this->makeNode([
                             'type' => 'supplier',
+                            'page_identifier' => 'supplier-' . $supplier['id_supplier'],
                             'label' => $supplier['name'],
-                            'url' => $this->context->link->getManufacturerLink(
+                            'url' => $this->context->link->getSupplierLink(
                                 new Supplier($supplier['id_supplier'], $id_lang),
                                 null,
                                 $id_lang
@@ -613,6 +622,7 @@ class Blocktopmenu extends Module implements WidgetInterface
 
                     $root_node['children'][] = $this->makeNode([
                         'type' => 'suppliers',
+                        'page_identifier' => 'suppliers',
                         'label' => $this->l('All suppliers'),
                         'url' => $this->context->link->getPageLink('supplier'),
                         'children' => $children
@@ -624,6 +634,7 @@ class Blocktopmenu extends Module implements WidgetInterface
                     if ($supplier->id) {
                         $root_node['children'][] = $this->makeNode([
                             'type' => 'supplier',
+                            'page_identifier' => 'supplier-' . $supplier->id,
                             'label' => $supplier->name,
                             'url' => $this->context->link->getSupplierLink(
                                 $supplier,
@@ -639,6 +650,7 @@ class Blocktopmenu extends Module implements WidgetInterface
                     if (Validate::isLoadedObject($shop)) {
                         $root_node['children'][] = $this->makeNode([
                             'type' => 'shop',
+                            'page_identifier' => 'shop-' . $id,
                             'label' => $shop->name,
                             'url' => $shop->getBaseURL(),
                         ]);
@@ -653,6 +665,7 @@ class Blocktopmenu extends Module implements WidgetInterface
                         }
                         $root_node['children'][] = $this->makeNode([
                             'type' => 'link',
+                            'page_identifier' => $link[0]['link'],
                             'label' => $link[0]['label'],
                             'url' => $link[0]['link'],
                             'open_in_new_window' => $link[0]['new_window']
@@ -710,6 +723,7 @@ class Blocktopmenu extends Module implements WidgetInterface
 
             $node['url'] = $link;
             $node['type'] = 'category';
+            $node['page_identifier'] = 'category-' . $category['id_category'];
 
             /* Whenever a category is not active we shouldnt display it to customer */
             if ((bool)$category['active'] === false) {
@@ -1351,6 +1365,32 @@ class Blocktopmenu extends Module implements WidgetInterface
         return $helper->generateList($links, $fields_list);
     }
 
+    private function getCurrentPageIdentifier()
+    {
+        $controllerName = Dispatcher::getInstance()->getController();
+        if ($controllerName === 'cms' && ($id = Tools::getValue('id_cms'))) {
+            return 'cms-page-' . $id;
+        } else if ($controllerName === 'category' && ($id = Tools::getValue('id_category'))) {
+            return 'category-' . $id;
+        } else if ($controllerName === 'cms' && ($id = Tools::getValue('id_cms_category'))) {
+            return 'cms-category-' . $id;
+        } else if ($controllerName === 'manufacturer' && ($id = Tools::getValue('id_manufacturer'))) {
+            return 'manufacturer-' . $id;
+        } else if ($controllerName === 'manufacturer') {
+            return 'manufacturers';
+        } else if ($controllerName === 'supplier' && ($id = Tools::getValue('id_supplier'))) {
+            return 'supplier-' . $id;
+        } else if ($controllerName === 'supplier') {
+            return 'suppliers';
+        } else if ($controllerName === 'product' && ($id = Tools::getValue('id_product'))) {
+            return 'product-' . $id;
+        } else if ($controllerName === 'index') {
+            return 'shop-' . $this->context->shop->id;
+        } else {
+            return "$_SERVER[REQUEST_SCHEME]://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+        }
+    }
+
     public function getWidgetVariables($hookName, array $configuration)
     {
         $id_lang = $this->context->language->id;
@@ -1359,17 +1399,22 @@ class Blocktopmenu extends Module implements WidgetInterface
         $key = self::MENU_JSON_CACHE_KEY . '_' . $id_lang . '_' . $id_shop . '.json';
         $cacheDir = $this->getCacheDirectory();
         $cacheFile = $cacheDir . DIRECTORY_SEPARATOR . $key;
-
-        $variables = json_decode(@file_get_contents($cacheFile), true);
-        if (!is_array($variables) || json_last_error() !== JSON_ERROR_NONE) {
-            $variables = $this->makeMenu();
+        $menu = json_decode(@file_get_contents($cacheFile), true);
+        if (!is_array($menu) || json_last_error() !== JSON_ERROR_NONE) {
+            $menu = $this->makeMenu();
             if (!is_dir($cacheDir)) {
                 mkdir($cacheDir);
             }
-            file_put_contents($cacheFile, json_encode($variables));
+            file_put_contents($cacheFile, json_encode($menu));
         }
 
-        return $variables;
+        $page_identifier = $this->getCurrentPageIdentifier();
+
+        // Mark the current page
+        return $this->mapTree(function (array $node) use ($page_identifier) {
+            $node['current'] = ($page_identifier === $node['page_identifier']);
+            return $node;
+        }, $menu);
     }
 
     public function renderWidget($hookName, array $configuration)
