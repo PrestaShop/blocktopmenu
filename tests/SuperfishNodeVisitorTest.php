@@ -17,12 +17,12 @@ class SuperfishNodeVisitorTest extends PHPUnit_Framework_TestCase
 
         $node->setSelected(false);
         $visitor->visit($node);
-        $this->assertEquals((string) $visitor, '<li><a href="http://prestashop.com" title="Foo">Foo</a></li>');
+        $this->assertEquals('<li><a href="http://prestashop.com" title="Foo">Foo</a></li>', (string) $visitor);
 
         $visitor->reset();
         $node->setSelected(true);
         $visitor->visit($node);
-        $this->assertEquals((string) $visitor, '<li class="sfHover"><a href="http://prestashop.com" title="Foo">Foo</a></li>');
+        $this->assertEquals('<li class="sfHover"><a href="http://prestashop.com" title="Foo">Foo</a></li>', (string) $visitor);
     }
 
     public function testVisitLinkNode()
@@ -37,7 +37,7 @@ class SuperfishNodeVisitorTest extends PHPUnit_Framework_TestCase
 
         $node->setSelected(false);
         $visitor->visit($node);
-        $this->assertEquals((string) $visitor, '<li><a href="http://prestashop.com" title="Foo" onclick="return !window.open(this.href);">Foo</a></li>');
+        $this->assertEquals('<li><a href="http://prestashop.com" title="Foo" onclick="return !window.open(this.href);">Foo</a></li>', (string) $visitor);
     }
 
     public function testVisitCategoryNode()
@@ -92,6 +92,6 @@ class SuperfishNodeVisitorTest extends PHPUnit_Framework_TestCase
         </li>
 EXPECTED;
 
-        $this->assertEquals((string) $visitor, str_replace(array(PHP_EOL, '  '), array('', ''), $expected));
+        $this->assertEquals(str_replace(array(PHP_EOL, '  '), array('', ''), $expected), (string) $visitor);
     }
 }
