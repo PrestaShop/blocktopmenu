@@ -958,7 +958,12 @@ class Blocktopmenu extends Module implements WidgetInterface
     protected function clearMenuCache()
     {
         $dir = $this->getCacheDirectory();
-        foreach (@scandir($dir) as $entry) {
+
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        foreach (scandir($dir) as $entry) {
             if (preg_match('/\.json$/', $entry)) {
                 unlink($dir . DIRECTORY_SEPARATOR . $entry);
             }
