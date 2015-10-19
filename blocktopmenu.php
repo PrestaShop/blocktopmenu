@@ -1392,7 +1392,11 @@ class Blocktopmenu extends Module implements WidgetInterface
         } else if ($controllerName === 'index') {
             return 'shop-' . $this->context->shop->id;
         } else {
-            return "$_SERVER[REQUEST_SCHEME]://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+            $scheme = 'http';
+            if (array_key_exists('REQUEST_SCHEME', $_SERVER)) {
+                $scheme = $_SERVER['REQUEST_SCHEME'];
+            }
+            return "$scheme://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
         }
     }
 
