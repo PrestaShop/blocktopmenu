@@ -91,7 +91,11 @@ class Blocktopmenu extends Module
         $this->clearMenuCache();
 
         if ($delete_params) {
-            if (!$this->installDb() || !Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_ITEMS', 'CAT3,CAT26') || !Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_SEARCH', '1')) {
+            if (!$this->installDb()
+                || !Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_ITEMS', 'CAT3,CAT26')
+                || !Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_SEARCH', '1')
+                || !Configuration::updateGlobalValue('MOD_BLOCKTOPMENU_DEPTH_LEVEL', '3')
+            ) {
                 return false;
             }
         }
@@ -128,7 +132,11 @@ class Blocktopmenu extends Module
         $this->clearMenuCache();
 
         if ($delete_params) {
-            if (!$this->uninstallDB() || !Configuration::deleteByName('MOD_BLOCKTOPMENU_ITEMS') || !Configuration::deleteByName('MOD_BLOCKTOPMENU_SEARCH')) {
+            if (!$this->uninstallDB()
+                || !Configuration::deleteByName('MOD_BLOCKTOPMENU_ITEMS')
+                || !Configuration::deleteByName('MOD_BLOCKTOPMENU_SEARCH')
+                || !Configuration::deleteByName('MOD_BLOCKTOPMENU_DEPTH_LEVEL')
+            ) {
                 return false;
             }
         }
@@ -189,6 +197,7 @@ class Blocktopmenu extends Module
                 }
 
                 $updated &= Configuration::updateValue('MOD_BLOCKTOPMENU_SEARCH', (bool)Tools::getValue('search'), false, (int)$shop_group_id, (int)$shop_id);
+                $updated &= Configuration::updateValue('MOD_BLOCKTOPMENU_DEPTH_LEVEL', (int)Tools::getValue('depth_level'), false, (int)$shop_group_id, (int)$shop_id);
 
                 if (!$updated) {
                     $shop = new Shop($shop_id);
@@ -592,6 +601,10 @@ class Blocktopmenu extends Module
 
     protected function generateCategoriesMenu($categories, $is_children = 0)
     {
+        $shop_id = (int)$this->context->shop->id;
+        $shop_group_id = Shop::getGroupFromShop($shop_id);
+        $depthLevel = (int)Configuration::get('MOD_BLOCKTOPMENU_DEPTH_LEVEL', null, $shop_group_id, $shop_id);
+
         $html = '';
 
         foreach ($categories as $key => $category) {
@@ -611,7 +624,7 @@ class Blocktopmenu extends Module
                 && (int)Tools::getValue('id_category') == (int)$category['id_category']) ? ' class="sfHoverForce"' : '').'>';
             $html .= '<a href="'.$link.'" title="'.$category['name'].'">'.$category['name'].'</a>';
 
-            if (isset($category['children']) && !empty($category['children'])) {
+            if (isset($category['children']) && !empty($category['children']) && $category['level_depth'] <= $depthLevel) {
                 $html .= '<ul>';
                 $html .= $this->generateCategoriesMenu($category['children'], 1);
 
@@ -970,7 +983,12 @@ class Blocktopmenu extends Module
                                     'label' => $this->l('Disabled')
                                 )
                             ),
-                        )
+                        ),
+                        array(
+                            'type' => 'text',
+                            'label' => $this->l('Depth level'),
+                            'name' => 'depth_level',
+                        ),
                     ),
                     'submit' => array(
                         'name' => 'submitBlocktopmenu',
@@ -1005,7 +1023,12 @@ class Blocktopmenu extends Module
                                     'label' => $this->l('Disabled')
                                 )
                             ),
-                        )
+                        ),
+                        array(
+                            'type' => 'text',
+                            'label' => $this->l('Depth level'),
+                            'name' => 'depth_level',
+                        ),
                     ),
                     'submit' => array(
                         'name' => 'submitBlocktopmenu',
@@ -1259,14 +1282,17 @@ class Blocktopmenu extends Module
     {
         $shops = Shop::getContextListShopID();
         $is_search_on = true;
+        $depth_level = 3;
 
         foreach ($shops as $shop_id) {
             $shop_group_id = Shop::getGroupFromShop($shop_id);
             $is_search_on &= (bool)Configuration::get('MOD_BLOCKTOPMENU_SEARCH', null, $shop_group_id, $shop_id);
+            $depth_level   = (int)Configuration::get('MOD_BLOCKTOPMENU_DEPTH_LEVEL', null, $shop_group_id, $shop_id);
         }
 
         return array(
-            'search' => (int)$is_search_on
+            'search'      => (int)$is_search_on,
+            'depth_level' => (int)$depth_level,
         );
     }
 
