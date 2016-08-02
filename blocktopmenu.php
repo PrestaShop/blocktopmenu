@@ -106,6 +106,7 @@ class Blocktopmenu extends Module
 			`id_linksmenutop` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 			`id_shop` INT(11) UNSIGNED NOT NULL,
 			`new_window` TINYINT( 1 ) NOT NULL,
+			`new_popup` TINYINT( 1 ) NOT NULL,
 			INDEX (`id_shop`)
 		) ENGINE = '._MYSQL_ENGINE_.' CHARACTER SET utf8 COLLATE utf8_general_ci;') &&
             Db::getInstance()->execute('
@@ -226,7 +227,7 @@ class Blocktopmenu extends Module
                         $shops = Shop::getContextListShopID();
 
                         foreach ($shops as $shop_id) {
-                            $added = MenuTopLinks::add($links_label, $labels,  Tools::getValue('new_window', 0), (int)$shop_id);
+                            $added = MenuTopLinks::add($links_label, $labels,  Tools::getValue('new_window', 0), (int)$shop_id, Tools::getValue('new_popup', 0));
 
                             if (!$added) {
                                 $shop = new Shop($shop_id);
@@ -272,13 +273,14 @@ class Blocktopmenu extends Module
                     $link = array();
                     $label = array();
                     $new_window = (int)Tools::getValue('new_window', 0);
+                    $new_popup = (int)Tools::getValue('new_popup', 0);
 
                     foreach (Language::getLanguages(false) as $lang) {
                         $link[$lang['id_lang']] = Tools::getValue('link_'.(int)$lang['id_lang']);
                         $label[$lang['id_lang']] = Tools::getValue('label_'.(int)$lang['id_lang']);
                     }
 
-                    MenuTopLinks::update($link, $label, $new_window, (int)$id_shop, (int)$id_linksmenutop, (int)$id_linksmenutop);
+                    MenuTopLinks::update($link, $label, $new_window, (int)$id_shop, (int)$id_linksmenutop, (int)$id_linksmenutop, $new_popup);
                     $this->_html .= $this->displayConfirmation($this->l('The link has been edited.'));
                 }
                 $update_cache = true;
@@ -565,7 +567,17 @@ class Blocktopmenu extends Module
                             $default_language = Configuration::get('PS_LANG_DEFAULT');
                             $link = MenuTopLinks::get($link[0]['id_linksmenutop'], $default_language, (int)Shop::getContextShopID());
                         }
-                        $this->_menu .= '<li><a href="'.Tools::HtmlEntitiesUTF8($link[0]['link']).'"'.(($link[0]['new_window']) ? ' onclick="return !window.open(this.href);"': '').' title="'.Tools::safeOutput($link[0]['label']).'">'.Tools::safeOutput($link[0]['label']).'</a></li>'.PHP_EOL;
+                        $this->_menu .= '<li><a href="'.Tools::HtmlEntitiesUTF8($link[0]['link']).'"';
+                        if($link[0]['new_window']) {
+                          if($link[0]['new_popup']) {
+                            // https://developer.mozilla.org/fr/docs/Web/API/Window/open
+                            $this->_menu .= ' onclick="return !window.open(this.href, \'prestashop-popup-blocktopmenu\', \'menubar=no, status=no, scrollbars=no, menubar=no, status=no, width=400, height=300\');"';
+                          } else {
+                            $this->_menu .= ' onclick="return !window.open(this.href);"';
+                          }
+                        }
+                        $this->_menu .= ' title="'.Tools::safeOutput($link[0]['label']).'">'.Tools::safeOutput($link[0]['label']).'</a></li>'.PHP_EOL;
+
                     }
                     break;
             }
@@ -915,8 +927,8 @@ class Blocktopmenu extends Module
 
         foreach ($linksmenutop as $id => $link) {
             Db::getInstance()->execute('
-				INSERT IGNORE INTO '._DB_PREFIX_.'linksmenutop (id_linksmenutop, id_shop, new_window)
-				VALUES (null, '.(int)$params['new_id_shop'].', '.(int)$link['new_window'].')');
+				INSERT IGNORE INTO '._DB_PREFIX_.'linksmenutop (id_linksmenutop, id_shop, new_window, new_popup)
+				VALUES (null, '.(int)$params['new_id_shop'].', '.(int)$link['new_window'].', '.(int)$link['new_popup'].')');
 
             $linksmenutop[$id]['new_id_linksmenutop'] = Db::getInstance()->Insert_ID();
         }
@@ -1076,6 +1088,24 @@ class Blocktopmenu extends Module
                                 'label' => $this->l('Disabled')
                             )
                         ),
+                    ),
+                    array(
+                      'type' => 'switch',
+                      'label' => $this->l('New popup'),
+                      'name' => 'new_popup',
+                      'is_bool' => true,
+                      'values' => array(
+                        array(
+                          'id' => 'active_on',
+                          'value' => 1,
+                          'label' => $this->l('Enabled')
+                        ),
+                        array(
+                          'id' => 'active_off',
+                          'value' => 0,
+                          'label' => $this->l('Disabled')
+                        )
+                      ),
                     )
                 ),
                 'submit' => array(
@@ -1275,6 +1305,7 @@ class Blocktopmenu extends Module
         $links_label_edit = '';
         $labels_edit = '';
         $new_window_edit = '';
+        $new_popup_edit = '';
 
         if (Tools::isSubmit('updatelinksmenutop')) {
             $link = MenuTopLinks::getLinkLang(Tools::getValue('id_linksmenutop'), (int)Shop::getContextShopID());
@@ -1286,10 +1317,12 @@ class Blocktopmenu extends Module
             $links_label_edit = $link['link'];
             $labels_edit = $link['label'];
             $new_window_edit = $link['new_window'];
+            $new_popup_edit = $link['new_popup'];
         }
 
         $fields_values = array(
             'new_window' => Tools::getValue('new_window', $new_window_edit),
+            'new_popup' => Tools::getValue('new_popup', $new_popup_edit),
             'id_linksmenutop' => Tools::getValue('id_linksmenutop'),
         );
 
@@ -1338,6 +1371,12 @@ class Blocktopmenu extends Module
             ),
             'new_window' => array(
                 'title' => $this->l('New window'),
+                'type' => 'bool',
+                'align' => 'center',
+                'active' => 'status',
+            ),
+            'new_popup' => array(
+                'title' => $this->l('New popup'),
                 'type' => 'bool',
                 'align' => 'center',
                 'active' => 'status',
