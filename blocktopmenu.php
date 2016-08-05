@@ -590,7 +590,7 @@ class Blocktopmenu extends Module
         return $html;
     }
 
-    protected function generateCategoriesMenu($categories, $is_children = 0)
+    public function generateCategoriesMenu($categories, $is_children = 0, $include_disabled = FALSE)
     {
         $html = '';
 
@@ -603,7 +603,7 @@ class Blocktopmenu extends Module
             }
 
             /* Whenever a category is not active we shouldnt display it to customer */
-            if ((bool)$category['active'] === false) {
+            if ((bool)$category['active'] === false && ! $include_disabled) {
                 continue;
             }
 
