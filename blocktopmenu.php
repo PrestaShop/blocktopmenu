@@ -579,7 +579,7 @@ class Blocktopmenu extends Module
         foreach ($categories as $key => $category) {
             if (isset($items_to_skip) /*&& !in_array('CAT'.(int)$category['id_category'], $items_to_skip)*/) {
                 $shop = (object) Shop::getShop((int)$category['id_shop']);
-                $html .= '<option value="CAT'.(int)$category['id_category'].'">'
+                $html .= '<option value="CAT'.(int)$category['id_category'].'"'.((int)$category['level_depth'] == 0 ? ' disabled="disabled"' : '').'>'
                     .str_repeat('&nbsp;', $this->spacer_size * (int)$category['level_depth']).$category['name'].' ('.$shop->name.')</option>';
             }
 
