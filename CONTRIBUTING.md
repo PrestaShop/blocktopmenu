@@ -1,14 +1,8 @@
-# Top horizontal menu
-
-## About
-
-Adds a new horizontal menu to the top of your e-commerce website.
-
-## Contributing
+# Contributing
 
 PrestaShop modules are open-source extensions to the PrestaShop e-commerce solution. Everyone is welcome and even encouraged to contribute with their own improvements.
 
-### Requirements
+## Requirements
 
 Contributors **must** follow the following rules:
 
@@ -16,7 +10,7 @@ Contributors **must** follow the following rules:
 * Do not update the module's version number.
 * Follow [the coding standards][1].
 
-### Process in details
+## Process in details
 
 Contributors wishing to edit a module's files should follow the following process:
 
@@ -34,4 +28,3 @@ That's it: you have contributed to this open-source project! Congratulations!
 [1]: http://doc.prestashop.com/display/PS16/Coding+Standards
 [2]: http://doc.prestashop.com/display/PS16/How+to+write+a+commit+message
 [3]: https://help.github.com/articles/using-pull-requests
-
