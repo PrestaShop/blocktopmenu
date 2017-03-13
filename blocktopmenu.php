@@ -1242,7 +1242,7 @@ class Blocktopmenu extends Module
                 $current = &$buff[$row['id_category']];
                 $current = $row;
 
-                if ($row['id_parent'] == 0) {
+                if ($row['is_root_category'] == 1) {
                     $categories[$row['id_category']] = &$current;
                 } else {
                     $buff[$row['id_parent']]['children'][$row['id_category']] = &$current;
