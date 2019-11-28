@@ -508,7 +508,8 @@ class Blocktopmenu extends Module
                 // Case to handle the option to show all Manufacturers
                 case 'ALLMAN':
                     $link = new Link;
-                    $this->_menu .= '<li><a href="'.$link->getPageLink('manufacturer').'" title="'.$this->l('All manufacturers').'">'.$this->l('All manufacturers').'</a><ul>'.PHP_EOL;
+                    $selected = ($this->page_name == 'manufacturer' && !Tools::getValue('id_manufacturer')) ? ' class="sfHoverForce"' : '';
+                    $this->_menu .= '<li'.$selected.'><a href="'.$link->getPageLink('manufacturer').'" title="'.$this->l('All manufacturers').'">'.$this->l('All manufacturers').'</a><ul>'.PHP_EOL;
                     $manufacturers = Manufacturer::getManufacturers();
                     foreach ($manufacturers as $key => $manufacturer) {
                         $this->_menu .= '<li><a href="'.$link->getManufacturerLink((int)$manufacturer['id_manufacturer'], $manufacturer['link_rewrite']).'" title="'.Tools::safeOutput($manufacturer['name']).'">'.Tools::safeOutput($manufacturer['name']).'</a></li>'.PHP_EOL;
